@@ -1,3 +1,8 @@
+<img width="1536" height="1024" alt="ChatGPT Image Sep 11, 2026, 09_46_24 PM" src="https://github.com/user-attachments/assets/9c9a527a-779e-4ea5-a37a-4b6ba40b2b04" />
+
+<img width="1536" height="1024" alt="ChatGPT Image Sep 11, 2026, 09_48_43 PM" src="https://github.com/user-attachments/assets/e43e8848-1f16-45c6-b821-31f68398b0be" />
+
+
 # Glass Proxy
 
 Glass is a longitudinal prompt-cache, context-management, recovery, client-reverse-engineering, and provider-protocol research project embodied in a production proxy for AI coding agents.
