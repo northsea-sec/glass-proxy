@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+# gemini-glass -- Gemini CLI through Glass proxy (endless sessions, no compaction)
+#
+# Launches Gemini CLI with all requests routed through glass-proxy's Gemini lane,
+# which applies Glass-style context management: progressive compression, eviction,
+# rolling summarization, and explicit CachedContent for 90% prefix caching discount.
+#
+# Usage:
+#   gemini-glass "implement the login page"
+#   gemini-glass                                   # Interactive mode
+#   gemini-glass --port 18890 "refactor"           # Custom proxy port
+#   gemini-glass --auto-start "deploy"             # Auto-start proxy if not running
+#   gemini-glass -m gemini-2.5-flash "quick fix"   # Override model
+#   gemini-glass --yolo "fix all tests"            # YOLO mode
+#
+# Environment:
+#   GLASS_PORT        Override proxy port (default: 18888)
+#   GLASS_AUTO_START  Set to 1 to auto-start proxy (same as --auto-start)
+#   GEMINI_API_KEY    Gemini API key (from Google AI Studio)
+#
+set -euo pipefail
+
+GLASS_DIR="/home/user/glass-proxy"
+GLASS_PORT="${GLASS_PORT:-18888}"
+GLASS_AUTO_START="${GLASS_AUTO_START:-0}"
+GLASS_BINARY="${GLASS_DIR}/glass-proxy"
+GLASS_CONFIG="${HOME}/.claude/glass_config.json"
+
+GEMINI_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --port)
+            GLASS_PORT="$2"
+            shift 2
+            ;;
+        --auto-start)
+            GLASS_AUTO_START=1
+            shift
+            ;;
+        --help|-h)
+            cat <<'EOF'
+gemini-glass -- Gemini CLI through Glass proxy (endless sessions)
+
+Routes all Gemini API calls through glass-proxy, which:
+  - Caches conversation contents locally (proxy owns state)
+  - Compresses old functionResponse and model text progressively
+  - Evicts oldest context when approaching token limits (700K default)
+  - Optionally summarizes evicted context via Gemini 2.5 Pro
+  - Manages explicit CachedContent for 90% prefix caching discount
+
+Usage:
+  gemini-glass [glass-options] [gemini-options] [PROMPT]
+
+Glass options (must come first):
+  --port PORT       Proxy port (default: 18888, or $GLASS_PORT)
+  --auto-start      Start glass-proxy if not running
+  --help            Show this help
+
+Everything else is forwarded to gemini. Examples:
+  gemini-glass "implement auth"
+  gemini-glass --yolo "fix all tests"
+  gemini-glass -m gemini-2.5-flash "quick task"
+  gemini-glass --port 18890 --auto-start "refactor"
+
+Config:
+  Proxy config:  ~/.claude/glass_config.json
+    gemini_evict_trigger_tokens     (default: 700000)
+    gemini_evict_target_tokens      (default: 500000)
+    gemini_summarize_enabled        (default: false)
+    gemini_summarize_interval       (default: 80000)
+    gemini_summarize_model          (default: "gemini-2.5-pro")
+    gemini_explicit_cache_enabled   (default: false)
+    gemini_cache_ttl_sec            (default: 3600)
+
+  Proxy logs:    /tmp/glass-proxy/current-PORT.log
+  Shadow dir:    ~/.claude/glass-gemini/
+EOF
+            exit 0
+            ;;
+        *)
+            GEMINI_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# Verify gemini CLI is installed.
+if ! command -v gemini &>/dev/null; then
+    echo "error: gemini not found in PATH" >&2
+    echo "  Install: npm install -g @google/gemini-cli" >&2
+    exit 1
+fi
+
+# Check if glass-proxy is listening.
+proxy_alive() {
+    timeout 1 bash -c "echo >/dev/tcp/127.0.0.1/${GLASS_PORT}" 2>/dev/null
+}
+
+# Glass unix-socket bridge: if GLASS_UNIX_SOCKET is set and points to a socket,
+# start a local socat bridge that forwards 127.0.0.1:$GLASS_PORT to the socket.
+# This lets the CLI use its normal TCP $GLASS_URL while the actual bytes travel
+# via AF_UNIX to the safe-shell sidecar, without host loopback.
+start_glass_unix_bridge() {
+    [[ -n "${GLASS_UNIX_SOCKET:-}" && -S "${GLASS_UNIX_SOCKET}" ]] || return 0
+    if ! command -v socat >/dev/null 2>&1; then
+        echo "[glass-shim] GLASS_UNIX_SOCKET set but socat not found" >&2
+        [[ "${SAFE_SHELL_GLASS_SIDECAR:-0}" == "1" ]] && return 1
+        unset GLASS_UNIX_SOCKET
+        return 0
+    fi
+    if timeout 0.5 bash -c "echo >/dev/tcp/127.0.0.1/${GLASS_PORT}" 2>/dev/null; then
+        # Port already has something listening — don't clobber it.
+        return 0
+    fi
+    socat "TCP-LISTEN:${GLASS_PORT},bind=127.0.0.1,reuseaddr,fork" "UNIX-CONNECT:${GLASS_UNIX_SOCKET}" >/dev/null 2>&1 &
+    GLASS_BRIDGE_PID=$!
+    disown "$GLASS_BRIDGE_PID" 2>/dev/null || true
+    trap "kill $GLASS_BRIDGE_PID 2>/dev/null || true" EXIT INT TERM
+    local waited=0
+    while [[ $waited -lt 30 ]]; do
+        if timeout 0.2 bash -c "echo >/dev/tcp/127.0.0.1/${GLASS_PORT}" 2>/dev/null; then
+            return 0
+        fi
+        sleep 0.1
+        waited=$((waited + 1))
+    done
+    echo "[glass-shim] socat bridge did not bind :${GLASS_PORT} within 3s" >&2
+    return 1
+}
+
+start_glass_unix_bridge || exit 1
+
+if ! proxy_alive; then
+    if [[ "${GLASS_AUTO_START}" == "1" ]]; then
+        echo "[gemini-glass] Proxy not running on :${GLASS_PORT} -- starting..."
+
+        if [[ ! -f "${GLASS_BINARY}" ]]; then
+            echo "[gemini-glass] Building glass-proxy..."
+            (cd "${GLASS_DIR}" && go build -o "${GLASS_BINARY}" ./cmd/glass-proxy/)
+        fi
+
+        LOG_DIR="${TMPDIR:-/tmp}/glass-proxy"
+        mkdir -p "${LOG_DIR}"
+        LOG_FILE="${LOG_DIR}/glass-proxy.${GLASS_PORT}.$(date +%Y%m%d-%H%M%S).log"
+        ln -sfn "${LOG_FILE}" "${LOG_DIR}/current-${GLASS_PORT}.log"
+
+        if [[ -f "${GLASS_DIR}/api-keys.env" ]]; then
+            # shellcheck disable=SC1091
+            source "${GLASS_DIR}/api-keys.env"
+        fi
+
+        API_KEY_FLAG=""
+        if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
+            API_KEY_FLAG="-api-key ${ANTHROPIC_API_KEY}"
+        fi
+
+        # shellcheck disable=SC2086
+        nohup "${GLASS_BINARY}" \
+            -listen ":${GLASS_PORT}" \
+            -upstream "https://api.anthropic.com" \
+            -config "${GLASS_CONFIG}" \
+            ${API_KEY_FLAG} \
+            -allow-direct \
+            >"${LOG_FILE}" 2>&1 &
+
+        PROXY_PID=$!
+        echo "[gemini-glass] Started glass-proxy (pid=${PROXY_PID}, log=${LOG_FILE})"
+
+        for _ in $(seq 1 50); do
+            if proxy_alive; then break; fi
+            sleep 0.1
+        done
+
+        if ! proxy_alive; then
+            echo "error: glass-proxy failed to start on :${GLASS_PORT}" >&2
+            echo "  Check log: ${LOG_FILE}" >&2
+            exit 1
+        fi
+        echo "[gemini-glass] Proxy ready on :${GLASS_PORT}"
+    else
+        echo "error: glass-proxy is not running on :${GLASS_PORT}" >&2
+        echo "" >&2
+        if [[ "${SAFE_SHELL_GLASS_SIDECAR:-0}" != "1" ]]; then
+            echo "  Start it:   ${GLASS_DIR}/start.sh --port ${GLASS_PORT}" >&2
+            echo "  Or use:     gemini-glass --auto-start" >&2
+        fi
+        exit 1
+    fi
+fi
+
+PROXY_URL="http://127.0.0.1:${GLASS_PORT}"
+
+echo "[gemini-glass] Routing through ${PROXY_URL} (glass context management active)"
+
+# Gemini CLI uses --proxy flag to route all API calls through a proxy.
+# The proxy URL replaces the base URL for Gemini API calls.
+export GOOGLE_GEMINI_BASE_URL="${PROXY_URL}"
+exec gemini "${GEMINI_ARGS[@]}"

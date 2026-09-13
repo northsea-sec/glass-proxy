@@ -1,0 +1,58 @@
+# Experiments, measurements, and recorded verification results
+
+This register publishes the tests and observations that changed the Glass design. A historical result marked verified remains verified for its recorded setup. Replays and local hashes are not relabeled as provider measurements; live observations are not relabeled as universal guarantees.
+
+| ID | Experiment or evidence set | Method | Recorded result | Design consequence |
+|---|---|---|---|---|
+| EXP-001 | System-prompt length modification | Removal, same-length replacement, and length-increasing injection on the tested provider path | Removal and same-length replacement succeeded; length increase returned 400 | System editing became length-aware and provider-specific. |
+| EXP-002 | Stage 2 hysteresis | Compare repeated drop behavior before/after disabling or widening Stage 2 | Report records cache hit improvement from the corrected configuration | Repeated client-resend drops were abandoned as the primary strategy. |
+| EXP-003 | Bridge-staleness simulation | Compare previous-response token state with current request growth | Prior bridge underestimated current request; growth-aware budgeting addressed the gap | Request budgeting must include current growth and session identity. |
+| EXP-004 | February cache amplifier study | Compare randomized transforms, MCP tool counts, idempotence, and ToolSearch behavior | Multiple independent prefix amplifiers recorded | System, tools, and messages became separate stabilization planes. |
+| EXP-005 | March 5 eviction activity | Four-hour log/report window of local-cache evictions | High eviction/token totals plus repeated early churn | Eviction throughput is not evidence of useful recovery. |
+| EXP-006 | March 6–7 replay from preserved lane states | Replay damaged request sequences from earlier and later snapshots | Failure shape reproduced from more than one state; not exact row-for-row identity | Poison was not limited to one late saved state; pinned-frame direction strengthened. |
+| EXP-007 | Frozen-reference change test | Hold reference text stable after overflow | Removed one mutation source but did not eliminate bridge/staircase misses | Entire post-overflow visible-set policy had to change. |
+| EXP-008 | Same-prefix severe-miss observation | Compare local measured prefix with reported cache usage | Severe misses occurred even when measured prefix looked stable | Local drift could not explain every remote miss. |
+| EXP-009 | Fact-fix impact analysis | Compare requests around stable versus changed operational fact blocks | Changes caused punctuated resets; stable blocks did not leak continuously | Memory publication cadence became part of cache policy. |
+| EXP-010 | Chapter recovery attempts | Read generated chapter/archive material after eviction | Very large recursive files were hard to read and did not reliably restore task state | Split exact source, human projection, index, and summary roles. |
+| EXP-011 | Recovery-gate reproduction | Repeated Read calls against recovery files | Gate continued to demand the file because it inspected the wrong protocol surface | Check assistant tool invocation and user result forms. |
+| EXP-012 | PRIME-GOLDEN structural suite | Offline message reduction, idempotence, summary structure, saturation, multi-cycle, isolation tests | Structural tests reported passing after fixture corrections | Offline structure became a prerequisite, not live/provider proof. |
+| EXP-013 | March 16 serializer aggregate | Compare pre/post switch counts, break rate, and per-switch cost | Switches fell, aggregate break rate stayed 5.1%, per-switch cost rose | Tested serializer configuration lacked expected aggregate benefit. |
+| EXP-014 | Global serializer latency traces | Compare ingestion time with provider TTFT and queue logs | 40–250 second local waits and a 120-second timeout were recorded | Scheduling must include user latency, not only cache transitions. |
+| EXP-015 | PID-separated concurrent sessions | Add PID to identity and inspect subsequent DB tracks | Distinct session IDs and high recorded efficiency in the bounded sample | System-prompt hash alone was insufficient session identity. |
+| EXP-016 | Tengu binary comparison | Static context analysis of v2.1.58 versus v2.1.74 | 74 feature gates, 9 boolean gates, 5 dynamic configs; 32 added and 16 removed | Client version/flag state became a required experimental variable. |
+| EXP-017 | March 23 patch/request correlation | Join request rows, classifications, serializer state, compression, and edit times | Concurrent subagent lane collision and scheduling became stronger than the report’s original single LRU headline | Cause weighting moved to replay and one-variable tests. |
+| EXP-018 | March 24 quota evidence | Compare requests/tokens/cache and 429 events against prior day | Three exhaustion events and a reported 51-minute re-exhaustion | Cache and quota incidents required separate filed reports and provider-accounting caution. |
+| EXP-019 | Compression/anchor event classification | Separate compression-only, anchor-only, both, and neither | Independent compression-associated and anchor-associated break events recorded | Neither “only anchor” nor “compression is harmless” survived. |
+| EXP-020 | Fixed-anchor compression test | Compress without adding messages or moving the anchor | Local prefix hash changed | Deferred compression can independently change a reusable prefix. |
+| EXP-021 | Three-variant eager-compression golden test | No compression versus post-build batch versus pre-build eager sequence | Seven modeled changes for old ordering, zero for eager | Pre-first-send ordering became the intended invariant. |
+| EXP-022 | Eager-compression live run | Deploy the eager variant and observe live break behavior | Severe regression recorded; variant reverted | Single-loop golden proof was insufficient for live sequence behavior. |
+| EXP-023 | Threshold replay | Replay 138 fixtures at thresholds 4, 8, 16, and 40 | Different reuse/create/uncached/total mass; zero exact matches for all | No universal optimal threshold selected. |
+| EXP-024 | Compression on/off replay | Replay 138 fixtures with and without compression | Off more than doubled modeled prompt mass and raised modeled create/uncached totals; zero exact matches | Compression is a transition-versus-tail-size tradeoff. |
+| EXP-025 | Interleaved/sequential replay | Replay identical requests in timestamp order and per-lane batches | 76 local hash changes and 44.9% stability in both orders | Ordering was not the local transformation cause in that corpus. |
+| EXP-026 | Concurrency day/bucket analysis | Compare main-session counts and break-rate aggregates | No monotonic break increase with more sessions; one historical metric row used an invalid formula | Aggregate concurrency did not prove provider LRU eviction. |
+| EXP-027 | Cache-efficiency formula audit | Recalculate selected rows | Later formula matched `read/(read+create+input)`; early `read/input` values were invalid | Metrics must be versioned with their formula. |
+| EXP-028 | Prefix-event census | Count 24,765 local prefix events across 352 files | Same/change/init and divergence positions recorded | Frequency supports local diagnostics but not remote cause by itself. |
+| EXP-029 | Burn-spike window analysis | Aggregate quota snapshots into 15-minute windows | 26 high-burn windows; report warns about residual/window artifacts | Burn slope requires freshness and request joins. |
+| EXP-030 | PID fallback replay | Compare captured metadata, PID-zero, recomputed ingress, no-parent, and no-PID variants | Captured-key zeroing unchanged; recomputation erased classifications and collapsed lanes; one apparent cache win inflated prompt mass | Identity must be derived once at ingress and propagated. |
+| EXP-031 | PID hardening focused verification | Source/tests plus debug route, binary mtime, and post-restart counters | Report records fallback self-gating, new counters, stale-binary detection, and parent-gate observations | Restart and identity claims gained explicit evidence requirements. |
+| EXP-032 | Small-system repeat-cache experiment | Promote repeated lanes after a hit threshold | First live sample added cache creation with zero read payoff; experiment disabled | Plausible optimization was not promoted without payoff. |
+| EXP-033 | Restart/TTL investigation | Compare prefix bytes, local state restoration, idle gaps, and requested cache TTL | Local prefixes were identical; cold recreates followed gaps longer than one hour | That spike was attributed to upstream expiry rather than local byte drift. |
+| EXP-034 | OpenAI/OMP overflow reproduction | Inspect 67,745-token request against 65,536-token local context | Request exceeded backend context; later retained tail also exceeded it | OpenAI-compatible lane needed its own budget and request-authoritative history. |
+| EXP-035 | OMP request-authoritative live sequence | Run successive requests after removing shared-history reingest | Eight calls stayed near 178–186 KB and returned 200 | Immediate growth spiral fixed for that run; endless operation not claimed. |
+| EXP-036 | OMP harness-removal replay/live comparison | Remove harness, replay capture, then use real client | Replay returned 200; live client lost cwd/tool contracts | Transport success is not consumer parity. |
+| EXP-037 | OpenAI first-byte heartbeat probe | Commit 200 and emit empty OpenAI events before slow upstream | Synthetic probe reported approximately 23 ms first byte | Event-shaped heartbeat replaced comments; real-client historical stall remained visible. |
+| EXP-038 | Codex Phase 0 capture | Observe real HTTP/WebSocket, events, compact, local state, and delegation | Native continuation, WebSocket, compact, quota, and child behavior recorded | Older REST/stateless assumptions superseded. |
+| EXP-039 | Codex root isolation live verification | Compare Claude/Codex trees and hashes before/after real flows | Codex artifacts stayed under Codex root; Claude root unchanged in recorded run | Root isolation verified separately from full parity. |
+| EXP-040 | GLASSDD component checks | Builds/tests plus JS-X-Ray and GuardDog probes | Recorded builds and individual scanner outputs; dnstwist and LLM Guard completion timed out | Component presence and enabled end-to-end enforcement remain separate. |
+| EXP-041 | System/user transform outbound capture | Inspect captured outbound system and user content after live request | System remained free of targeted mutations; user transform applied; upstream returned 200 | Message authority and transform scope became explicit. |
+| EXP-042 | Current/publication static integrity | Compare donor/staged bytes, modes, inventory, and remote blob identities | Previous publication records matching donor source and public blobs | Publication integrity does not claim runtime behavior. |
+
+## Result classes
+
+- **Recorded live verification:** the source contains a live run or direct runtime observation.
+- **Recorded test verification:** the source contains an executed test and result.
+- **Replay/model result:** the source records comparative local output, not provider billing or semantic quality.
+- **Static reverse engineering:** the source records inspected code/binary structure, not active account assignment.
+- **Owner observation:** direct evidence of experienced chronology, usefulness, failure, or cost burden.
+
+Every source behind these entries appears in the [source catalogue](source-catalogue.md). Every failed or reverted experiment also appears in the [solution register](solution-register.md).

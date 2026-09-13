@@ -1,0 +1,365 @@
+#!/usr/bin/env bash
+# codex-glass -- Codex CLI through Glass proxy (endless sessions, no compaction)
+#
+# Launches Codex with all requests routed through glass-proxy's Codex lane,
+# which strips OpenAI's server-side compaction and applies Glass-style context
+# management: progressive compression, eviction, rolling summarization.
+#
+# Usage:
+#   codex-glass "implement the login page"    # Start with a prompt
+#   codex-glass                               # Interactive mode
+#   codex-glass --model gpt-5.4 "fix tests"  # Override model
+#   codex-glass --port 18890 "refactor"       # Custom proxy port
+#   codex-glass --auto-start "deploy"         # Auto-start proxy if not running
+#   codex-glass --full-auto "fix everything"  # Pass --full-auto to codex
+#
+# Environment:
+#   GLASS_PORT        Override proxy port (default: 18888)
+#   GLASS_AUTO_START  Set to 1 to auto-start proxy (same as --auto-start)
+#
+set -euo pipefail
+
+# ── Defaults ──────────────────────────────────────────────────────────────────
+
+GLASS_DIR="/home/user/glass-proxy"
+GLASS_PORT="${GLASS_PORT:-18888}"
+GLASS_AUTO_START="${GLASS_AUTO_START:-0}"
+GLASS_BINARY="${GLASS_DIR}/glass-proxy"
+CODEX_HOME_ROOT="${CODEX_HOME:-${HOME}/.codex}"
+CODEX_RUNTIME_ROOT="${GLASS_RUNTIME_ROOT:-${CODEX_HOME_ROOT}/glass-proxy}"
+GLASS_CONFIG="${GLASS_CONFIG:-${CODEX_RUNTIME_ROOT}/glass_config.json}"
+GLASS_LOG_DIR="${GLASS_LOG_DIR:-${CODEX_RUNTIME_ROOT}/logs}"
+CODEX_AUTH_FILE="${CODEX_HOME_ROOT}/auth.json"
+CODEX_JS_ENTRY="${HOME}/.local/lib/node_modules/@openai/codex/bin/codex.js"
+GLASS_RUNTIME_LANE="${GLASS_RUNTIME_LANE:-codex}"
+GLASS_REPLAY_CAPTURE_DIR="${GLASS_REPLAY_CAPTURE_DIR:-${CODEX_RUNTIME_ROOT}/glass-replay-capture-current}"
+
+# Context window: GPT-5.4 supports 1.05M tokens. We set the window high so
+# Codex never triggers its own compaction — glass-proxy manages context instead.
+# The proxy's Codex lane evicts at 200K by default (configurable in glass_config.json).
+CONTEXT_WINDOW=1000000
+COMPACT_LIMIT=999999
+
+# ── Parse our flags (before passing the rest to codex) ────────────────────────
+
+CODEX_ARGS=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --port)
+            GLASS_PORT="$2"
+            shift 2
+            ;;
+        --auto-start)
+            GLASS_AUTO_START=1
+            shift
+            ;;
+        --help|-h)
+            cat <<'EOF'
+codex-glass -- Codex CLI through Glass proxy (endless sessions)
+
+Routes all Codex API calls through glass-proxy, which:
+  - Strips context_management (prevents server-side compaction)
+  - Caches conversation items locally
+  - Compresses old tool outputs and assistant text progressively
+  - Evicts oldest context when approaching token limits
+  - Optionally summarizes evicted context via GPT-5.4
+
+Usage:
+  codex-glass [glass-options] [codex-options] [PROMPT]
+
+Glass options (must come first):
+  --port PORT       Proxy port (default: 18888, or $GLASS_PORT)
+  --auto-start      Start glass-proxy if not running
+  --help            Show this help
+
+Everything else is forwarded to codex. Examples:
+  codex-glass "implement auth"
+  codex-glass --full-auto "fix all tests"
+  codex-glass -m gpt-5.4 -s workspace-write "deploy"
+  codex-glass --port 18890 --auto-start "refactor"
+
+Config:
+  Proxy config:  ~/.codex/glass-proxy/glass_config.json
+    claude_upstream              (optional Claude/Anthropic lane override; default: https://api.anthropic.com in codex mode)
+    codex_shadow_dir             (optional override; default: ~/.codex/glass-proxy/shadow)
+    codex_evict_trigger_tokens   (default: 200000)
+    codex_evict_target_tokens    (default: 150000)
+    codex_summarize_enabled      (default: false)
+    codex_summarize_interval     (default: 50000)
+    codex_summarize_model        (default: "gpt-5.4")
+
+  Proxy logs:    ~/.codex/glass-proxy/logs/current-PORT.log
+  Codex shadow:  ~/.codex/glass-proxy/shadow/
+  Codex patches: ~/.codex/glass-proxy/
+EOF
+            exit 0
+            ;;
+        *)
+            # Everything else goes to codex.
+            CODEX_ARGS+=("$1")
+            shift
+            ;;
+    esac
+done
+
+# ── Preflight checks ─────────────────────────────────────────────────────────
+
+CODEX_CMD=()
+
+resolve_codex_cmd() {
+    if command -v codex >/dev/null 2>&1; then
+        CODEX_CMD=("codex")
+        return 0
+    fi
+    if command -v node >/dev/null 2>&1 && [[ -f "${CODEX_JS_ENTRY}" ]]; then
+        CODEX_CMD=("node" "${CODEX_JS_ENTRY}")
+        return 0
+    fi
+    return 1
+}
+
+# Check if glass-proxy is listening.
+proxy_alive() {
+    # TCP connect check — no HTTP needed, just see if something is listening.
+    timeout 1 bash -c "echo >/dev/tcp/127.0.0.1/${GLASS_PORT}" 2>/dev/null
+}
+
+listener_pids() {
+    if command -v lsof >/dev/null 2>&1; then
+        lsof -tiTCP:"${GLASS_PORT}" -sTCP:LISTEN 2>/dev/null || true
+        return 0
+    fi
+    if command -v fuser >/dev/null 2>&1; then
+        fuser -n tcp "${GLASS_PORT}" 2>/dev/null | tr ' ' '\n' | sed '/^$/d' || true
+        return 0
+    fi
+    return 0
+}
+
+proxy_is_codex_mode() {
+    local status_json
+    status_json="$(curl -fsS --max-time 1 "http://127.0.0.1:${GLASS_PORT}/debug/proxy-mode" 2>/dev/null || true)"
+    [[ -n "${status_json}" ]] && grep -Eq '"mode"[[:space:]]*:[[:space:]]*"codex"' <<<"${status_json}"
+}
+
+restart_existing_proxy() {
+    local pids
+    pids="$(listener_pids)"
+    if [[ -z "${pids}" ]]; then
+        return 0
+    fi
+    if [[ "${CODEX_GLASS_FORCE_RESTART:-0}" == "1" ]]; then
+        echo "[codex-glass] CODEX_GLASS_FORCE_RESTART=1 set — killing existing proxy on :${GLASS_PORT} (pids: ${pids}) to restart in codex mode"
+        kill ${pids} 2>/dev/null || true
+        sleep 1
+        return 0
+    fi
+    echo "[codex-glass] WARNING: proxy on :${GLASS_PORT} is not in codex mode, but all lanes (claude/openai/codex/gemini/openrouter) are served from the same process regardless of startup mode — proceeding without restart." >&2
+    echo "[codex-glass]          If you truly need the proxy restarted in codex mode (risking interruption of sibling-lane sessions sharing this port), re-run with CODEX_GLASS_FORCE_RESTART=1." >&2
+    return 0
+}
+
+ensure_glass_config() {
+    if [[ -f "${GLASS_CONFIG}" ]]; then
+        return 0
+    fi
+
+    mkdir -p "$(dirname "${GLASS_CONFIG}")"
+    echo "[codex-glass] Creating default config: ${GLASS_CONFIG}"
+    cat > "${GLASS_CONFIG}" <<JSON
+{
+  "enabled": true,
+  "evict_trigger_tokens": 165000,
+  "evict_target_tokens": 135000,
+  "anchor_keep_messages": 4,
+  "recent_keep_messages": 20,
+  "claude_upstream": "",
+  "spoof_usage_cap_tokens": 140000,
+  "strip_system_reminders": true,
+  "strip_thinking_blocks": true,
+  "block_non_opus": true,
+  "force_thinking": true,
+  "force_thinking_budget": 31999,
+  "sysprompt_enabled": true,
+  "sysprompt_patch_file": "${CODEX_RUNTIME_ROOT}/glass_sysprompt_patches.json",
+  "sysprompt_replace_file": "${CODEX_RUNTIME_ROOT}/glass_sysprompt_replace.json",
+  "auto_refusal_rewrite_enabled": false,
+  "auto_refusal_rewrite_strategy": "full_comply",
+  "auto_usage_policy_rewrite_enabled": false,
+  "tool_def_freeze": true,
+  "mcp_tool_cache": true,
+  "serializer_enabled": true
+}
+JSON
+}
+
+resolve_go_bin() {
+    if [[ -n "${GO_BIN:-}" && -x "${GO_BIN}" ]]; then
+        printf '%s\n' "${GO_BIN}"
+        return 0
+    fi
+    if command -v go >/dev/null 2>&1; then
+        command -v go
+        return 0
+    fi
+    if [[ -x /usr/local/go/bin/go ]]; then
+        printf '%s\n' /usr/local/go/bin/go
+        return 0
+    fi
+    return 1
+}
+
+detect_codex_auth_mode() {
+    if [[ -f "${CODEX_AUTH_FILE}" ]] && grep -Eq '"auth_mode"[[:space:]]*:[[:space:]]*"chatgpt"' "${CODEX_AUTH_FILE}"; then
+        printf '%s\n' "chatgpt"
+        return 0
+    fi
+    printf '%s\n' "api_key"
+}
+
+needs_build() {
+    if [[ ! -f "${GLASS_BINARY}" ]]; then
+        return 0
+    fi
+    if [[ "${GLASS_DIR}/go.mod" -nt "${GLASS_BINARY}" || "${GLASS_DIR}/go.sum" -nt "${GLASS_BINARY}" ]]; then
+        return 0
+    fi
+    if find "${GLASS_DIR}/cmd" "${GLASS_DIR}/internal" -type f -name '*.go' -newer "${GLASS_BINARY}" -print -quit | grep -q .; then
+        return 0
+    fi
+    return 1
+}
+
+if ! resolve_codex_cmd; then
+    echo "error: codex not found in PATH and no local Codex CLI install was found" >&2
+    echo "  Install: https://developers.openai.com/codex/cli" >&2
+    exit 1
+fi
+
+# Glass unix-socket bridge: if GLASS_UNIX_SOCKET is set and points to a socket,
+# start a local socat bridge that forwards 127.0.0.1:$GLASS_PORT to the socket.
+# This lets the CLI use its normal TCP $GLASS_URL while the actual bytes travel
+# via AF_UNIX to the safe-shell sidecar, without host loopback.
+start_glass_unix_bridge() {
+    [[ -n "${GLASS_UNIX_SOCKET:-}" && -S "${GLASS_UNIX_SOCKET}" ]] || return 0
+    if ! command -v socat >/dev/null 2>&1; then
+        echo "[glass-shim] GLASS_UNIX_SOCKET set but socat not found" >&2
+        [[ "${SAFE_SHELL_GLASS_SIDECAR:-0}" == "1" ]] && return 1
+        unset GLASS_UNIX_SOCKET
+        return 0
+    fi
+    if timeout 0.5 bash -c "echo >/dev/tcp/127.0.0.1/${GLASS_PORT}" 2>/dev/null; then
+        # Port already has something listening — don't clobber it.
+        return 0
+    fi
+    socat "TCP-LISTEN:${GLASS_PORT},bind=127.0.0.1,reuseaddr,fork" "UNIX-CONNECT:${GLASS_UNIX_SOCKET}" >/dev/null 2>&1 &
+    GLASS_BRIDGE_PID=$!
+    disown "$GLASS_BRIDGE_PID" 2>/dev/null || true
+    trap "kill $GLASS_BRIDGE_PID 2>/dev/null || true" EXIT INT TERM
+    local waited=0
+    while [[ $waited -lt 30 ]]; do
+        if timeout 0.2 bash -c "echo >/dev/tcp/127.0.0.1/${GLASS_PORT}" 2>/dev/null; then
+            return 0
+        fi
+        sleep 0.1
+        waited=$((waited + 1))
+    done
+    echo "[glass-shim] socat bridge did not bind :${GLASS_PORT} within 3s" >&2
+    return 1
+}
+
+start_glass_unix_bridge || exit 1
+
+if [[ "${SAFE_SHELL_GLASS_SIDECAR:-0}" != "1" ]] && proxy_alive && ! proxy_is_codex_mode; then
+    if [[ "${GLASS_AUTO_START}" == "1" ]]; then
+        restart_existing_proxy
+    else
+        echo "error: proxy on :${GLASS_PORT} is running in generic mode, not codex mode" >&2
+        echo "  Use: ${GLASS_DIR}/bin/codex-glass --auto-start" >&2
+        exit 1
+    fi
+fi
+
+if ! proxy_alive; then
+    if [[ "${GLASS_AUTO_START}" == "1" ]]; then
+        echo "[codex-glass] Proxy not running on :${GLASS_PORT} -- starting..."
+
+        # Build if binary missing or source is newer.
+        if needs_build; then
+            GO_BUILD_BIN="$(resolve_go_bin || true)"
+            if [[ -z "${GO_BUILD_BIN}" ]]; then
+                echo "error: cannot build glass-proxy because Go is not installed or not on PATH" >&2
+                echo "  Checked \$GO_BIN, PATH, and /usr/local/go/bin/go" >&2
+                exit 1
+            fi
+            echo "[codex-glass] Building glass-proxy with ${GO_BUILD_BIN}..."
+            (cd "${GLASS_DIR}" && "${GO_BUILD_BIN}" build -o "${GLASS_BINARY}" ./cmd/glass-proxy/)
+        fi
+
+        # Start in background, log to file.
+        LOG_DIR="${GLASS_LOG_DIR}"
+        mkdir -p "${LOG_DIR}"
+        LOG_FILE="${LOG_DIR}/glass-proxy.${GLASS_PORT}.$(date +%Y%m%d-%H%M%S).log"
+        ln -sfn "${LOG_FILE}" "${LOG_DIR}/current-${GLASS_PORT}.log"
+
+        ensure_glass_config
+
+        nohup env \
+            GLASS_RUNTIME_LANE="${GLASS_RUNTIME_LANE}" \
+            GLASS_RUNTIME_ROOT="${CODEX_RUNTIME_ROOT}" \
+            GLASS_CONFIG="${GLASS_CONFIG}" \
+            GLASS_REPLAY_CAPTURE_DIR="${GLASS_REPLAY_CAPTURE_DIR}" \
+            "${GLASS_BINARY}" \
+            -listen ":${GLASS_PORT}" \
+            -mode "codex" \
+            -upstream "https://api.openai.com" \
+            -config "${GLASS_CONFIG}" \
+            -allow-direct \
+            >"${LOG_FILE}" 2>&1 &
+
+        PROXY_PID=$!
+        echo "[codex-glass] Started glass-proxy (pid=${PROXY_PID}, log=${LOG_FILE})"
+
+        # Wait for it to come up (max 5 seconds).
+        for i in $(seq 1 50); do
+            if proxy_alive; then
+                break
+            fi
+            sleep 0.1
+        done
+
+        if ! proxy_alive; then
+            echo "error: glass-proxy failed to start on :${GLASS_PORT}" >&2
+            echo "  Check log: ${LOG_FILE}" >&2
+            exit 1
+        fi
+        echo "[codex-glass] Proxy ready on :${GLASS_PORT}"
+    else
+        echo "error: glass-proxy is not running on :${GLASS_PORT}" >&2
+        echo "" >&2
+        if [[ "${SAFE_SHELL_GLASS_SIDECAR:-0}" != "1" ]]; then
+            echo "  Start it:   ${GLASS_DIR}/start.sh --port ${GLASS_PORT}" >&2
+            echo "  Or use:     codex-glass --auto-start" >&2
+        fi
+        exit 1
+    fi
+fi
+
+# ── Launch Codex ──────────────────────────────────────────────────────────────
+
+PROXY_URL="http://127.0.0.1:${GLASS_PORT}"
+AUTH_MODE="$(detect_codex_auth_mode)"
+
+if [[ "${AUTH_MODE}" == "chatgpt" ]]; then
+    echo "[codex-glass] Routing through ${PROXY_URL} (codex-native mode, compaction disabled, glass context management active)"
+    echo "[codex-glass] Detected ChatGPT subscription auth; the Codex lane will relay it on /responses"
+else
+    echo "[codex-glass] Routing through ${PROXY_URL} (codex-native mode, compaction disabled, glass context management active)"
+    echo "[codex-glass] Detected API-key auth; the Codex lane will relay it on /responses"
+fi
+
+exec "${CODEX_CMD[@]}" \
+    -c "openai_base_url=\"${PROXY_URL}\"" \
+    -c "model_context_window=${CONTEXT_WINDOW}" \
+    -c "model_auto_compact_token_limit=${COMPACT_LIMIT}" \
+    "${CODEX_ARGS[@]}"

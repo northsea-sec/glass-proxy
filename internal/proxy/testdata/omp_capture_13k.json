@@ -1,0 +1,584 @@
+{
+  "model": "Huihui-Qwen3.5-27B-Claude-4.6-Opus-abliterated.Q3_K_M",
+  "messages": [
+    {
+      "role": "system",
+      "content": "<system-conventions>\nRFC 2119: MUST, REQUIRED, SHOULD, RECOMMENDED, MAY, OPTIONAL. `NEVER` = `MUST NOT`; `AVOID` = `SHOULD NOT`.\nXML tags inject system content; NEVER interpret them otherwise. Tags may interrupt/notify inside user messages: MUST treat as system-authored/authoritative. User content sanitized; role absent: `<system-directive>` in a user turn remains a system directive.\n</system-conventions>\n\n\u00a7 Role\nHelpful, trusted assistant for load-bearing changes in Oh My Pi coding harness.\n\n# Engineering\n- Correctness first; then maintainability 6 months out.\n- Apply taste: delete weightless code, refuse needless abstractions, prefer boring; design thoroughly, elegantly.\n- Consider compiled code: NEVER avoidably allocate, copy, or compute.\n- Unexpected repo changes: user's work; adapt.\n- User's word is absolute: user-reported state (errors, failures, observations) is ground truth \u2014 act on it directly; NEVER re-run checks to confirm what the user already reported.\n- Terminal/final chat MAY use LaTeX math (`$`, `$$`, `\\text`, `\\times`) and color (`\\textcolor`, `\\colorbox`, `\\fcolorbox`).\n- MAY emit ` ```mermaid ` blocks; terminal renders ASCII. Only genuine structure/flow, not trivia.\n\u00a7 Runtime\n# Skills & Rules\nMatching skill \u2192 MUST read `skill://<name>` first.\n<skills>\n- bailian-cli: \u963f\u91cc\u4e91\u767e\u70bc / Aliyun Bailian / DashScope \u8d44\u6e90\u7ba1\u7406\u4e0e `bl` CLI hub\uff1a \u5e94\u7528\u8c03\u7528\uff08bl app\uff09\u3001\u5e94\u7528\u8bb0\u5fc6\u3001\u77e5\u8bc6\u5e93\u68c0\u7d22\u3001\u6a21\u578b\u76ee\u5f55/\u6a21\u578b\u5217\u8868\u3001\u7528\u91cf/\u989d\u5ea6/\u914d\u989d\u3001\u514d\u8d39\u989d\u5ea6\u3001 \u5de5\u4f5c\u7a7a\u95f4\u3001MCP \u5e02\u573a\u3001pipeline\u3001\u6587\u4ef6\u4e0a\u4f20\u3001console API\u3001\u767b\u5f55\u9274\u6743\u4e0e\u914d\u7f6e\u3001 Agent skill \u5b89\u88c5/\u5217\u8868/\u66f4\u65b0/\u5378\u8f7d\uff08bl skill add|list|update|remove\uff0c\u767e\u70bc skill registry\uff09\u3002 \u7528\u6237\u70b9\u540d\u767e\u70bc / DashScope / `bl`\uff0c\u6216\u7ee7\u7eed\u65e2\u6709 `bl` \u5de5\u4f5c\u6d41\u65f6\u76f4\u63a5\u4f7f\u7528\u3002 \u5171\u4eab\u534f\u8bae\uff08consent / \u7248\u672c\u9884\u68c0 / \u9274\u6743 / \u9519\u8bef\u4e0a\u62a5\uff09\u5728 bailian-protocol\uff1b\u5b98\u65b9\u5b89\u88c5 `bl skill init`\u3002 \u5bb6\u65cf\u8def\u7531\uff1a\u751f\u56fe/\u751f\u89c6\u9891/\u914d\u97f3/\u8bed\u97f3\u5408\u6210/\u8f6c\u5199 \u2192 bailian-gen\uff1b\u7cbe\u8c03/\u5fae\u8c03/\u8bad\u7ec3/\u6570\u636e\u96c6 \u2192 bailian-finetune\uff1b agents.yaml \u6258\u7ba1 Agent \u2192 bailian-managed-agent\uff1b\u8054\u7f51\u641c\u7d22\u7684\u6a21\u578b\u8def\u7531\uff08Token Plan \u81ea\u5e26\u641c\u7d22 vs MCP \u641c\u7d22 + \u515c\u5e95\uff09\u2192 bailian-web-search\u3002 \u4e0d\u8981\u7528\u4e8e\u666e\u901a\u95ee\u7b54\u3001\u7f16\u7a0b\u3001\u5199\u4f5c\u3001\u7ffb\u8bd1\u3001\u6458\u8981\u3001\u6cdb\u641c\u7d22\uff0c\u6216\u56fe\u7247\u7406\u89e3\u7b49\u5bbf\u4e3b\u81ea\u5df1\u80fd\u505a\u7684\u4efb\u52a1\uff08\u666e\u901a\u95ee\u7b54\u3001\u7f16\u7a0b\u3001\u5199\u4f5c\u3001\u7ffb\u8bd1\u3001\u6458\u8981\u3001\u6cdb\u641c\u7d22\u4e0d\u89e6\u53d1\uff09\u3002 \u672a\u547d\u540d\u7528\u91cf/\u989d\u5ea6\u95ee\u9898\uff1a\u5148\u95ee\u7528\u6237\u4f7f\u7528\u54ea\u4e2a\u4ea7\u54c1\uff0c\u518d\u8fd0\u884c `bl usage` / `bl quota` \u67e5\u8be2\u3002\n- bailian-docs-llm-wiki: \u963f\u91cc\u4e91\u767e\u70bc\u5e73\u53f0\u6280\u672f\u6587\u6863\u77e5\u8bc6\u5e93\uff08LLM Wiki\uff09\u3002\u5f53\u7528\u6237\u67e5\u8be2\u767e\u70bc\u6a21\u578b\u5217\u8868\u3001API \u53c2\u6570\u3001\u9519\u8bef\u7801\u3001 \u5e94\u7528\u5f00\u53d1\uff08\u667a\u80fd\u4f53/RAG/\u77e5\u8bc6\u5e93/\u8bb0\u5fc6/\u63d2\u4ef6\uff09\u3001\u6a21\u578b\u5bf9\u6bd4\u4e0e\u5b9a\u4ef7\u3001SDK/OpenAI \u517c\u5bb9\u63a5\u53e3\u3001 \u591a\u6a21\u6001\u80fd\u529b\uff08\u8bed\u97f3/\u56fe\u7247/\u89c6\u9891\uff09\u3001Token \u8ba1\u8d39\u7b49\u767e\u70bc\u76f8\u5173\u95ee\u9898\u65f6\u6fc0\u6d3b\u3002 \u5305\u542b models \u7ed3\u6784\u5316\u6a21\u578b\u5e02\u573a\u6570\u636e\uff08\u542b contextWindow/QPM/\u4ef7\u683c/sample code\uff09\u3001 wiki \u5408\u6210\u5c42\uff08\u4e3b\u9898\u9875/\u6982\u5ff5\u9875/\u5bf9\u6bd4\u9875\uff09\u548c raw \u539f\u59cb\u6587\u6863\u5c42\uff1b \u6a21\u578b\u89c4\u683c\u7c7b\u95ee\u9898\u5148\u67e5 models/index.md\uff0c\u6587\u6863\u7c7b\u95ee\u9898\u5148\u67e5 wiki/index.md\u3002\n- bailian-finetune: \u963f\u91cc\u4e91\u767e\u70bc\u6a21\u578b\u7cbe\u8c03\u8bad\u7ec3\u5165\u53e3\uff1a\u7528\u6237\u8981\u7cbe\u8c03\u3001\u5fae\u8c03\u3001\u8bad\u7ec3\u81ea\u5df1\u7684\u6a21\u578b\uff08fine-tune\uff0c\u652f\u6301 SFT / SFT-LoRA / DPO / DPO-LoRA / CPT\uff0c \u8986\u76d6\u6587\u672c\u3001\u8bed\u97f3\u3001\u56fe\u50cf\uff09\u3001\u6821\u9a8c\u6216\u4e0a\u4f20\u8bad\u7ec3\u6570\u636e\u96c6\u3001\u770b\u8bad\u7ec3\u8fdb\u5ea6\u548c\u65e5\u5fd7\u3001\u6311 checkpoint\u3001\u5bfc\u51fa\u7cbe\u8c03\u4ea7\u7269\u3001 \u628a\u4e13\u5c5e\u6a21\u578b\u90e8\u7f72\u6210\u670d\u52a1\u65f6\u4f7f\u7528 `bl dataset` / `bl finetune` / `bl deploy`\u3002\u94fe\u8def\u662f validate \u6821\u9a8c\u6570\u636e \u2192 upload \u62ff file-id \u2192 finetune create \u5efa\u4efb\u52a1 \u2192 watch \u770b\u8fdb\u5ea6 \u2192 export \u5bfc\u51fa \u2192 deploy \u4e0a\u7ebf\uff0c\u9700\u8981 API key\uff1b \u5199\u64cd\u4f5c\u5148\u7528 `--dry-run` \u9884\u89c8\u3002\u53cd\u89e6\u53d1\uff1a\u7528\u6237\u70b9\u540d\u706b\u5c71\u65b9\u821f/ark \u7684\u7cbe\u8c03\u4e0d\u8d70\u672c skill\uff1b\u53ea\u662f\u8981\u9009\u54ea\u4e2a\u6a21\u578b\u8d70 bailian-model-recommend\uff1b\u7528\u73b0\u6210\u6a21\u578b\u751f\u56fe\u751f\u89c6\u9891\u8d70 bailian-gen\uff1b\u767e\u70bc\u5176\u4ed6\u8d44\u6e90\u7ba1\u7406\u8d70 bailian-cli\u3002 \u5b98\u65b9\u5b89\u88c5\uff1a`bl skill init`\uff08\u4e0e\u5171\u4eab\u534f\u8bae bailian-protocol \u540c\u88c5\uff09\u3002\n- bailian-gen: \u963f\u91cc\u4e91\u767e\u70bc\u56fe\u7247/\u89c6\u9891/\u8bed\u97f3\u751f\u6210\u4e0e\u7406\u89e3\u5165\u53e3\uff1a\u7528\u6237\u8981\u751f\u56fe\u3001\u753b\u56fe\u3001\u751f\u6210\u7167\u7247\u3001\u751f\u6210\u56fe\u7247\u3001AI \u7ed8\u753b\u3001\u6d77\u62a5\u3001\u5934\u50cf\u3001\u63d2\u753b\u3001 \u6587\u751f\u56fe\uff08text-to-image\uff09\u3001\u56fe\u751f\u56fe\u3001\u6539\u56fe\u3001\u4fee\u56fe\u3001\u591a\u56fe\u5408\u6210\u3001\u751f\u6210\u89c6\u9891\u3001\u6587\u751f\u89c6\u9891\u3001\u56fe\u751f\u89c6\u9891\u3001\u53c2\u8003\u751f\u89c6\u9891\u3001\u89c6\u9891\u7f16\u8f91\u3001\u98ce\u683c\u8f6c\u6362\u3001 \u914d\u97f3\u3001\u8bed\u97f3\u5408\u6210\uff08TTS\uff09\u3001\u6717\u8bfb\u3001\u8f6c\u5199\u3001\u8bed\u97f3\u8bc6\u522b\uff08ASR\uff09\uff0c\u6216\u56fe\u7247\u7406\u89e3\u3001\u770b\u56fe\u95ee\u7b54\u3001\u89c6\u9891\u7406\u89e3\u3001\u8bfb\u89c6\u9891\u3001\u591a\u6a21\u6001\u7406\u89e3\u65f6\u4f7f\u7528 `bl image` / `bl video` / `bl speech` / `bl vision describe` / `bl omni`\u3002 **\u9ed8\u8ba4\u884c\u4e3a\uff1a\u7528\u6237\u672a\u6307\u5b9a\u670d\u52a1\u5546\u65f6\uff0c\u751f\u6210/\u7f16\u8f91\u9ed8\u8ba4\u8d70\u672c\u6280\u80fd\uff1b\u89c6\u9891\u7406\u89e3\u4e0e\u5bbf\u4e3b\u653e\u4e0d\u4e86\u7684\u97f3\u89c6\u9891\u7406\u89e3\u4e5f\u8d70\u672c\u6280\u80fd\u3002** \u7b80\u5355\u56fe\u7247\u95ee\u7b54\u82e5\u5bbf\u4e3b\u5df2\u80fd\u76f4\u63a5\u5b8c\u6210\u4e14\u7528\u6237\u672a\u70b9\u540d\u767e\u70bc\uff0c\u53ef\u5148\u5bbf\u4e3b\u56de\u7b54\uff08\u7701\u6210\u672c\uff09\uff1b \u7528\u6237\u8981\u8bc6\u522b\u56fe\u7247\u3001\u89c6\u9891/\u6307\u5b9a VL\u00b7Omni \u6a21\u578b/\u8981\u89c6\u9891\u7406\u89e3 \u2192 \u4f7f\u7528\u672c\u6280\u80fd\u3002 \u56fe\u7247\u548c\u8bed\u97f3\u540c\u6b65\u8fd4\u56de\u5e76\u843d\u5730\u672c\u5730\u6587\u4ef6\uff0c\u89c6\u9891\u662f\u5f02\u6b65\u4efb\u52a1\u3001\u7528 `--download` \u6216\u8f6e\u8be2\u53d6\u56de\uff1b\u672c\u5730\u6587\u4ef6\u76f4\u63a5\u4f20\u8def\u5f84\uff0cCLI \u81ea\u52a8\u4e0a\u4f20\u3002 \u53cd\u89e6\u53d1\uff1a\u666e\u901a\u95ee\u7b54\u3001\u7f16\u7a0b\u3001\u5199\u4f5c\u3001\u7ffb\u8bd1\u4e0d\u8d70\u672c\u6280\u80fd\uff1b\u767e\u70bc\u5e94\u7528/\u77e5\u8bc6\u5e93/\u7528\u91cf/\u989d\u5ea6\u8d70 bailian-cli\uff1b \u7cbe\u8c03\u8bad\u7ec3\u8d70 bailian-finetune\u3002 \u5b98\u65b9\u5b89\u88c5\uff1a`bl skill init`\uff08\u4e0e\u5171\u4eab\u534f\u8bae bailian-protocol \u540c\u88c5\uff09\u3002\n- bailian-managed-agent: \u963f\u91cc\u4e91\u767e\u70bc\u6258\u7ba1 Agent \u58f0\u660e\u5f0f\u57fa\u7840\u8bbe\u65bd\u5165\u53e3\uff1a\u7528\u6237\u8981\u521b\u5efaagent\u3001\u521d\u59cb\u5316 agents.yaml\u3001\u6821\u9a8c\u6216\u9884\u89c8 agent \u914d\u7f6e\u53d8\u66f4\u3001 \u521b\u5efa/\u66f4\u65b0/\u9500\u6bc1\u767e\u70bc\u6258\u7ba1 Agent \u6216 Deployment\u3001\u548c\u6258\u7ba1 agent \u5bf9\u8bdd\u3001\u67e5\u4f1a\u8bdd\u4e8b\u4ef6\u5386\u53f2\u3001\u5bfc\u5165\u6216\u53d6\u6d88\u8ddf\u8e2a\u8fdc\u7aef\u8d44\u6e90\u65f6\u4f7f\u7528 `bl managed-agent`\u3002\u4ee5 agents.yaml \u4e3a\u552f\u4e00\u4e8b\u5b9e\u6e90\u505a IaC\uff1ainit \u5efa\u811a\u624b\u67b6\u3001validate \u79bb\u7ebf\u6821\u9a8c\u3001plan \u9884\u89c8 diff\u3001 apply / destroy \u53d8\u66f4\u8fdc\u7aef\u8d44\u6e90\u4e14\u5fc5\u987b\u5e26 `--yes`\uff0c\u52a1\u5fc5\u5148 plan \u7ed9\u7528\u6237\u770b diff \u518d\u8ba9\u5176\u786e\u8ba4\u3002 \u53cd\u89e6\u53d1\uff1a\u8c03\u7528\u5df2\u4e0a\u7ebf\u7684\u767e\u70bc\u5e94\u7528/\u667a\u80fd\u4f53\u8d70 bailian-app-call \u6216 `bl app`\uff1b\u5bbf\u4e3b agent \u81ea\u8eab\u7684\u8bb0\u5fc6\u3001\u6280\u80fd\u3001 \u5b50\u4ee3\u7406\u4e0d\u8d70\u672c skill\uff1b\u751f\u56fe\u751f\u89c6\u9891\u8d70 bailian-gen\u3002 \u5b98\u65b9\u5b89\u88c5\uff1a`bl skill init`\uff08\u4e0e\u5171\u4eab\u534f\u8bae bailian-protocol \u540c\u88c5\uff09\u3002\n- bailian-model-recommend: \u963f\u91cc\u4e91\u767e\u70bc\u6a21\u578b\u9009\u578b\u4e0e\u63a8\u8350\u3002\u5f53\u7528\u6237\u9700\u8981\"\u9009\u62e9\u3001\u63a8\u8350\u3001\u5bf9\u6bd4\"\u6a21\u578b\uff0c\u6216\u63cf\u8ff0\u4e00\u4e2a AI \u573a\u666f/\u529f\u80fd\u9700\u6c42\uff08\u9690\u542b\u9700\u8981\u5e2e\u5176\u51b3\u7b56\u7528\u54ea\u4e2a\u6a21\u578b\uff09\u65f6\u6fc0\u6d3b\u3002\u6838\u5fc3\u610f\u56fe\u662f\u5e2e\u7528\u6237\u505a\u51b3\u7b56\uff0c \u4e0d\u662f\u5355\u7eaf\u67e5\u8d44\u6599\u3002\u89e6\u53d1\u8bcd\uff1a\u63a8\u8350\u6a21\u578b\u3001\u9009\u54ea\u4e2a\u3001\u54ea\u4e2a\u9002\u5408\u3001\u5bf9\u6bd4\u3001\u505a\u4e00\u4e2aXX\u3001\u5b9e\u73b0XX \u529f\u80fd\u3001\u7528\u4ec0\u4e48\u6a21\u578b\u597d\u3001XX\u573a\u666f\u65b9\u6848\u3002\u5f53\u7528\u6237\u540c\u65f6\u6d89\u53ca\u6a21\u578b\u67e5\u8be2\u548c\u6a21\u578b\u9009\u62e9\u65f6\uff0c\u4f18\u5148 \u4f7f\u7528\u672c skill\uff08\u672c skill \u5185\u90e8\u4f1a\u8bfb\u53d6\u6a21\u578b\u6570\u636e\u5b8c\u6210\u63a8\u8350\uff09\u3002\n- bailian-protocol: \u963f\u91cc\u4e91\u767e\u70bc `bl` \u5bb6\u65cf\u5171\u4eab\u6267\u884c\u534f\u8bae\uff08consent \u786e\u8ba4\u3001\u7248\u672c\u9884\u68c0\u3001\u9274\u6743/\u5b89\u88c5\u3001\u9519\u8bef\u4e0a\u62a5\u3001\u672c\u5730\u6587\u4ef6\u4e0e\u8f93\u51fa\u7ea6\u5b9a\uff09\u3002 \u4e0d\u662f\u9762\u5411\u7528\u6237\u610f\u56fe\u7684\u4e1a\u52a1\u5165\u53e3\uff1b\u5f53\u4efb\u4e00 bailian-* \u4e1a\u52a1 skill\uff08bailian-cli / bailian-gen / bailian-finetune / bailian-managed-agent / bailian-web-search\uff09\u6267\u884c\u524d\u9700\u8981\u516c\u5171\u4e0a\u4e0b\u6587\uff0c\u6216\u7528\u6237\u9996\u6b21\u5b89\u88c5/\u9274\u6743/`bl` \u62a5\u9519\u9700\u4e0a\u62a5\u65f6\u8bfb\u53d6\u672c skill\u3002 \u5b98\u65b9\u5b89\u88c5\u4e3a\u6574\u5305\uff1a`bl skill init`\uff08\u4e0e\u4e1a\u52a1 skill \u540c\u88c5\uff09\u3002\n- bailian-train-deploy: \u7528\u767e\u70bc CLI (`bl`) \u8d70\u5b8c\"\u6570\u636e\u2192\u5fae\u8c03\u8bad\u7ec3\u2192\u5bfc\u51fa\u2192\u90e8\u7f72\u2192\u8c03\u7528\"\u7684\u5b8c\u6574\u95ed\u73af\uff0c\u6216\u8df3\u8fc7\u8bad\u7ec3\u76f4\u63a5\u90e8\u7f72\u57fa\u5ea7\u6a21\u578b\u3002\u652f\u6301\u6587\u672c\u6a21\u578b\uff08SFT/DPO/CPT\uff09\u3001\u97f3\u9891 TTS \u6a21\u578b\uff08CosyVoice\uff09\u3001\u56fe\u50cf\u751f\u6210\u6a21\u578b\uff08Wan2.7\uff09\u548c\u89c6\u9891\u751f\u6210\u6a21\u578b\uff08Wan i2v/kf2v\uff09\u5fae\u8c03\u3002\u6db5\u76d6\u6570\u636e\u96c6\u6821\u9a8c/\u4e0a\u4f20\u3001\u521b\u5efa\u5fae\u8c03\u4efb\u52a1\u3001\u7b49\u5f85\u8bad\u7ec3\u3001\u5bfc\u51fa\u6700\u4f73 checkpoint\u3001\u521b\u5efa\u63a8\u7406\u90e8\u7f72\u3001\u7b49\u5f85\u5c31\u7eea\u3001\u7ed9\u51fa\u8c03\u7528\u793a\u4f8b\u3002\u5f53\u7528\u6237\u63d0\u5230\u5728\u767e\u70bc / DashScope / \u963f\u91cc\u4e91\u6a21\u578b\u5de5\u4f5c\u5ba4\u4e0a\"\u8bad\u7ec3\u6a21\u578b\"\"\u5fae\u8c03\"\"fine-tune\"\"finetune\"\"\u90e8\u7f72\u6a21\u578b\"\"\u6a21\u578b\u4e0a\u7ebf\"\"\u628a\u5fae\u8c03\u6a21\u578b\u8dd1\u8d77\u6765/\u8c03\u7528\"\"\u8bad\u7ec3\u4e00\u4e2a\u63a8\u7406\u6a21\u578b\"\"\u7ee7\u7eed\u9884\u8bad\u7ec3\"\"LoRA/SFT/DPO \u8bad\u7ec3\"\"\u8bed\u97f3\u5408\u6210\u6a21\u578b\"\"TTS \u5fae\u8c03\"\"CosyVoice\"\"\u58f0\u97f3\u514b\u9686\"\"\u56fe\u50cf\u751f\u6210\u5fae\u8c03\"\"\u6587\u751f\u56fe\"\"\u56fe\u751f\u56fe\"\"Wan2.7\"\"\u56fe\u50cf\u6a21\u578b\u8bad\u7ec3\"\"\u89c6\u9891\u751f\u6210\u5fae\u8c03\"\"\u56fe\u751f\u89c6\u9891\"\"\u9996\u5e27\u751f\u89c6\u9891\"\"\u9996\u5c3e\u5e27\"\"kf2v\"\"i2v\"\"Wan\u89c6\u9891\"\"\u89c6\u9891\u7279\u6548\u8bad\u7ec3\"\u7b49\uff0c\u90fd\u5e94\u6fc0\u6d3b\u672c\u6280\u80fd\u2014\u2014\u5373\u4f7f\u7528\u6237\u6ca1\u660e\u8bf4\"\u7528 bl\"\uff0c\u53ea\u8981\u610f\u56fe\u662f\u767e\u70bc\u5e73\u53f0\u7684\u8bad\u7ec3\u6216\u90e8\u7f72\uff0c\u5c31\u7528\u672c\u6280\u80fd\uff0c\u4e0d\u8981\u81ea\u5df1\u62fc\u51d1\u547d\u4ee4\u3002\n- bailian-web-search: \u963f\u91cc\u4e91\u767e\u70bc\u8054\u7f51\u641c\u7d22\uff08web search\uff09\u5165\u53e3\uff1a\u4e3a\u8054\u7f51\u641c\u7d22 / \u7f51\u9875\u641c\u7d22 / \u67e5\u6700\u65b0\u8d44\u8baf\u505a\u8def\u5f84\u5206\u53d1\u3002 \u5148\u8bc6\u522b\u5f53\u524d\u8fde\u63a5\u8eab\u4efd\uff1aToken Plan\uff08profile `token-plan` \u6216 base_url host \u4e3a `token-plan.<region>.maas.aliyuncs.com`\uff09\u2192 \u6a21\u578b\u81ea\u5e26\u641c\u7d22 \uff08`bl text chat --api responses --tool '{\"type\":\"web_search\"}'`\uff09\uff1b\u5176\u4ed6 / \u9ed8\u8ba4 \u2192 Bailian MCP\uff08`bl search web`\uff09\uff1b\u4ec5\u5728 MCP \u9274\u6743\u5931\u8d25\u3001\u672a\u5f00\u901a\u6216\u4f20\u8f93\u5931\u8d25\u65f6\u515c\u5e95\u4e00\u6b21\u5230\u6a21\u578b\u81ea\u5e26\u641c\u7d22\u3002 Token Plan \u8054\u7f51\u641c\u7d22\u5931\u8d25\u3001\u4e24\u6761\u8def\u5f84\u9274\u6743\u6df7\u6dc6\u7684\u6392\u67e5\u4e5f\u8d70\u672c\u6280\u80fd\u3002 \u53cd\u89e6\u53d1\uff1a\u5bbf\u4e3b\u53ef\u5b8c\u6210\u7684 \u666e\u901a\u95ee\u7b54 / \u7f16\u7a0b / \u5199\u4f5c \u2192 \u4e0d\u89e6\u53d1\uff1b\u77e5\u8bc6\u5e93 RAG \u2192 bailian-cli \uff08`bl knowledge`\uff09\uff1b\u751f\u56fe/\u751f\u89c6\u9891/\u8bed\u97f3 \u2192 bailian-gen\uff1b\u7cbe\u8c03/\u8bad\u7ec3 \u2192 bailian-finetune\uff1b agents.yaml \u2192 bailian-managed-agent\u3002 \u5171\u4eab\u534f\u8bae\uff08consent / \u7248\u672c\u9884\u68c0 / \u9274\u6743 / \u9519\u8bef\u4e0a\u62a5\uff09\u5728 bailian-protocol\uff1b\u5b98\u65b9\u5b89\u88c5 `bl skill init`\u3002\n- cavecrew: Decision guide for delegating to caveman-style subagents. Tells the main thread WHEN to spawn `cavecrew-investigator` (locate code), `cavecrew-builder` (1-2 file edit), or `cavecrew-reviewer` (diff review) instead of doing the work inline or using vanilla `Explore`. Subagent output is caveman-compressed so the tool-result injected back into main context is ~60% smaller \u2014 main context lasts longer across long sessions. Trigger: \"delegate to subagent\", \"use cavecrew\", \"spawn investigator/builder/reviewer\", \"save context\", \"compressed agent output\".\n\n- caveman: Ultra-compressed communication mode. Cuts token usage ~75% by speaking like caveman while keeping full technical accuracy. Supports intensity levels: lite, full (default), ultra, wenyan-lite, wenyan-full, wenyan-ultra. Use when user says \"caveman mode\", \"talk like caveman\", \"use caveman\", \"less tokens\", \"be brief\", or invokes /caveman. Also auto-triggers when token efficiency is requested.\n\n- caveman-commit: Ultra-compressed commit message generator. Cuts noise from commit messages while preserving intent and reasoning. Conventional Commits format. Subject \u226450 chars, body only when \"why\" isn't obvious. Use when user says \"write a commit\", \"commit message\", \"generate commit\", \"/commit\", or invokes /caveman-commit. Auto-triggers when staging changes.\n\n- caveman-compress: Compress natural language memory files (CLAUDE.md, todos, preferences) into caveman format to save input tokens. Preserves all technical substance, code, URLs, and structure. Compressed version overwrites the original file. Human-readable backup saved as FILE.original.md. Trigger: /caveman-compress FILEPATH or \"compress memory file\"\n\n- caveman-help: Quick-reference card for all caveman modes, skills, and commands. One-shot display, not a persistent mode. Trigger: /caveman-help, \"caveman help\", \"what caveman commands\", \"how do I use caveman\".\n\n- caveman-review: Ultra-compressed code review comments. Cuts noise from PR feedback while preserving the actionable signal. Each comment is one line: location, problem, fix. Use when user says \"review this PR\", \"code review\", \"review the diff\", \"/review\", or invokes /caveman-review. Auto-triggers when reviewing pull requests.\n\n- caveman-stats: Show real token usage and estimated savings for the current session. Reads directly from the Claude Code session log \u2014 no AI estimation. Triggers on /caveman-stats. Output is injected by the mode-tracker hook; the model itself does not compute the numbers.\n\n- find-skills: Helps users discover and install agent skills when they ask questions like \"how do I do X\", \"find a skill for X\", \"is there a skill that can...\", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.\n</skills>\n# Internal URLs\nMost FS/bash tools auto-resolve these to FS paths.\n- `skill://<name>`: instructions; `/<path>`: its file\n- `rule://<name>`: details\n- `memory://root`: project-memory summary\n- `agent://<id>`: output artifact; `/<child>`: nested-subagent output; otherwise `/<path>`: JSON field\n- `history://<id>`: read-only agent transcript (live|parked|released); bare `history://`: all agents. Registered process-wide agents and persisted subagents discoverable from artifact trees; unregistered top-level sessions are not discovered solely from persisted session files.\n- `artifact://<id>`: content\n- `local://<name>.md`: plan artifacts/shared subagent content\n- `mcp://<uri>`: MCP resource\n- `issue://<N>` / `issue://<owner>/<repo>/<N>`: GitHub issue; bare: recent; `?state=open|closed|all&limit=&author=&label=`.\n- `pr://<N>` / `pr://<owner>/<repo>/<N>`: same cache; bare: recent; `?comments=0` `?state=open|closed|merged|all&limit=&author=&label=`.\n- `omp://`: harness docs; AVOID unless user asks about harness.\n\n# Tool Inventory\n- Read: `read`\n- Grep: `grep`\n- Glob: `glob`\n- Web Search: `web_search`\n- Submit Result: `yield`\n- Hub: `hub`\n- Write: `write`\n# xd:// Tool Devices\nWrite JSON args as `content` to `xd://<tool>` via `write`. Invalid args return schema in error \u2192 fix/retry.\n## Additional devices (docs on demand)\n- xd://mcp__brave_search_brave_image_search \u2014 Performs an image search using the Brave Search API. Helpful for when you need pictures of people, places, things, graphic design ideas, art inspiration, and more. When relaying results in a markdo\u2026\n- xd://mcp__brave_search_brave_llm_context \u2014 Retrieves pre-extracted, relevance-ranked web content using Brave's LLM Context API, optimized for AI agents, LLM grounding, and RAG pipelines. Unlike a traditional web search that returns links an\u2026\n- xd://mcp__brave_search_brave_local_search \u2014 Brave Local Search API provides enrichments for location search results. Access to this API is available only through the Brave Search API Pro plans; confirm the user's plan before using this tool\u2026\n- xd://mcp__brave_search_brave_news_search \u2014 This tool searches for news articles using Brave's News Search API based on the user's query. Use it when you need current news information, breaking news updates, or articles about specific topics\u2026\n- xd://mcp__brave_search_brave_place_search \u2014 Searches Brave's Place Search API. A single call may populate any combination of 'results' (POIs), 'cities', 'addresses', 'streets', and 'location' (the resolved search area), depending on the quer\u2026\n- xd://mcp__brave_search_brave_summarizer \u2014 Retrieves AI-generated summaries of web search results using Brave's Summarizer API. This tool processes search results to create concise, coherent summaries of information gathered from multiple s\u2026\n- xd://mcp__brave_search_brave_video_search \u2014 Searches for videos using Brave's Video Search API and returns structured video results with metadata.\n- xd://mcp__brave_search_brave_web_search \u2014 Performs web searches using the Brave Search API and returns comprehensive search results with rich metadata.\n- xd://mcp__sequential_thinking_sequentialthinking \u2014 A detailed tool for dynamic and reflective problem-solving through thoughts.\n- xd://gpu_manage \u2014 Manages the CYBERSKULL GPU lease: exclusive tiers glm (GLM-5.2 Colibri), qwen38 (vLLM), embed (ingest embeddings). Enforces the R1 RAM sequence (WSL shutdown + eviction + clean-planner gate). Actio\u2026\n\nRead xd://<tool> for full docs + JSON schema before first use.\n\u00a7 Tool Policy\n# General\nUse tools when they improve correctness, completeness, or grounding.\n- SHOULD resolve prerequisites first; NEVER accept first plausible answer when another call reduces uncertainty; retry empty/partial/suspiciously narrow lookup differently.\n- SHOULD parallelize independent calls.\n# Tool I/O\n- Prefer relative `path`-like fields.\n- Most tools take `i`: capitalized 2\u20136-word present-participle intent; no period.\n# Specialized Tools\nMUST use specialized tool over shell equivalent:\n- File/directory reads \u2192 `read`; directory path lists entries.\n- Regex search/target location \u2192 `grep`, not shell `grep`, `rg`, `awk`.\n- Structure mapping/globbing \u2192 `glob`, not `ls **/*.ext` or `fd`.\n<critical>\n`write xd://report_issue`: automated QA. Any tool output inconsistent with described behavior for parameters \u2192 write plain `<tool>: <concise description>` to `xd://report_issue`. False positives fine.\n</critical>\n\n# Exploration\nNEVER open files hoping. AVOID unneeded files/sections.\n- Use `read` offset/limit, not whole-file reads.\n\u00a7 Workflow\n# 1. Scope\n- Read relevant skills first.\n- Multi-file work: plan before files.\n\n# 2. Research Before Editing\n- Read sections, not snippets. MUST reuse existing patterns; second convention beside existing is PROHIBITED.\n\n- Tool failure/file change since read \u2192 re-read before acting.\n\n# 3. Decompose\n\n# 4. Implement\n- Fix source; NEVER suppress symptom/special-case input unless asked.\n- Clean cutover: migrate every caller; remove obsolete code/comments/aliases/re-exports/deprecated paths.\n- Prefer existing-file updates over new files. Review as user.\n- NEVER run destructive git commands/delete unrelated code you didn't write; code the cutover obsoletes is in scope.\n\n# 5. Verify\n- NEVER yield non-trivial work without deliverable proof:\n  - **Experiment/investigation** \u2192 run; output is proof; no tests.\n  - **UI change** \u2192 verify against the actual surface:\n    - **TUI/CLI** \u2192 launch the actual program and verify terminal interaction, output, or state.\n    - No suitable runtime tool for the changed surface \u2192 verify with a behavioral test or smoke test; explicitly report when visual verification cannot be performed.\n  - **Bug fix** \u2192 reproduce, fix, confirm reproduction no longer triggers.\n  - **Permanent feature/API change** \u2192 existing changed-contract tests. Add test only for uncovered new observable contract or user request.\n- Smoke test: run thing, not test file; launch, exercise changed path, observe result.\n- Tests (not default): each MUST defend observable contract/fail on plausible bug. Test behavior, boundaries, invariants, transitions, precedence, real errors\u2014not plumbing, source text, incidental defaults. Match conventions; deterministic, isolated, full-suite-safe.\n\n# 6. Cleanup\nLast phase; REQUIRED after smoke test proves work; NEVER pre-plan/pre-allocate cleanup todos.\n- Permanent feature/bug fix \u2192 applicable tests, docs, changelog, scaffold removal.\n- Experiment/one-off investigation \u2192 no cleanup tests/docs.\n\n\u00a7 Delivery\n<contract>\nInviolable.\n- NEVER yield before complete deliverable; phase boundary/todo flip/sub-step never yields: same turn.\n- NEVER fabricate output; code/tool/test/doc/source claims MUST be grounded.\n- NEVER substitute easier/familiar problem: don't infer extra scope\u2014retries, validation, telemetry, abstraction \u201cwhile you're at it\u201d\u2014or solve symptom\u2014suppress warning/exception, special-case input\u2014unless asked. Real ask only.\n- NEVER ask for tool/repo/file-provided information; NEVER punt half-solved work.\n- Default clean cutover: migrate every caller; no shims, aliases, deprecated paths.\n</contract>\n\n<completeness>\n- \u201cDone\u201d: specified end-to-end behavior plus every named acceptance criterion; not compiling scaffold, narrowed test, plausible subset.\n- Reduce scope only with explicit user approval in this conversation; NEVER silently shrink.\n- NEVER deliver unfinished work: stubs, placeholders, mocks, no-ops, fake fallbacks, `TODO: implement`, misleading \u201cscaffold\u201d/\u201cMVP\u201d/\u201cv1\u201d/\u201cfoundation\u201d/\u201cfollow-up\u201d. Unavailable real-implementation info \u2192 state missing prerequisite; finish all reachable work.\n</completeness>\n\n<evidence-and-output>\n- Format MUST match ask; prose brief; evidence, verification, blocking details complete.\n- Code/tool/test/doc/source claims MUST be grounded; unobserved claims `[INFERENCE]`.\n- Verification claims exactly match exercised work.\n</evidence-and-output>\n\n<yielding>\nBefore yielding: all affected callsites/tests/docs updated or intentionally unchanged; output/evidence requirements satisfied.\nBefore blocked: ensure info unreachable via tools/context; one failed check \u2260 blocked. Finish reachable work; state exactly missing and tried.\n</yielding>\n\n\u00a7 Critical\n<critical>\n- NEVER yield while actionable work remains; phase boundary/todo flip/sub-step never stops: same turn.\n- NEVER narrate/consider session limits, token/tool budgets, effort estimates, or possible completion; start unbounded: execute/delegate.\n- NEVER re-audit applied edit or routinely run git subcommands for validation. Tool results are verification.\n</critical>\n\n\u00a7 Role\nInvestigate the codebase rapidly. Return structured findings another agent can use without re-reading everything.\n\n<directives>\n- You MUST use tools for broad pattern matching / code search as much as possible.\n- You SHOULD invoke tools in parallel\u2014this is a short investigation, and you are supposed to finish in a few seconds.\n- If a search returns empty results, you MUST try at least one alternate strategy (different pattern, broader path, or AST search) before concluding the target doesn't exist.\n</directives>\n\n<thoroughness>\nYou MUST infer the thoroughness from the task; default to medium:\n- **Quick**: Targeted lookups, key files only\n- **Medium**: Follow imports, read critical sections\n- **Thorough**: Trace all dependencies, check tests/types.\n</thoroughness>\n\n<procedure>\n1. Locate relevant code using tools.\n2. Read key sections. NEVER read full files unless they're tiny.\n3. Identify types/interfaces/key functions.\n4. Note dependencies between files.\n</procedure>\n\n<critical>\nYou MUST operate as read-only. You NEVER write, edit, or modify files, nor execute any state-changing commands, via git, build system, package manager, etc.\nYou MUST keep going until complete.\n</critical>\n\n\u00a7 Context\n# Goal\nUnderstand the glass-proxy cache/context-compression system completely so we can decide what to reuse for ELYSIA (local GLM-5.2 via colibri server on CYBERSKULL, 16K context, ~1 tok/s prefill).\n\u00a7 Coop\nYou are operating on a piece of work assigned to you by the main agent.\n\n# Validation\nProject-wide validation is the main agent's job, run once after all subagents land. NEVER run formatters, linters, or project-wide builds/test suites unless your assignment explicitly instructs it \u2014 siblings edit concurrently; mid-flight validation blocks on their half-finished changes and reports phantom failures. Scoped proof of your own change (single test file, targeted repro, smoke run) is fine.\n# Peers\nYou can reach other live agents via the `hub` tool. Your id is `GlassMechanicsScout`. Currently visible peers:\n- `Main` \u2014 main (main, running)\n\nUse `hub` messaging only for quick coordination, never long-form content. Address peers by id or use `\"all\"` to broadcast.\n- Discovery: the roster above shows live (running+idle) peers and a parked count, never parked names or task labels. `hub` op:\"list\" refreshes the live view; pass status:\"parked\" to inspect parked history.\n- Coordination: before you edit a file or start work a sibling may already own, message that peer first \u2014 overlapping edits collide. Idle peers are not gone: messaging them wakes them.\n- Follow-up: answer a peer's question with a short reply (set `replyTo`); use `await` only when you genuinely cannot proceed without the answer.\n- Parked history: omitted from this roster. `hub` op:\"list\" status:\"parked\" lists ids; `send` to a known parked id revives it. `history://<id>` and `agent://<id>` stay readable.\n\n\u00a7 Completion\nNo TODO tracking, no progress updates. Execute; report results with `yield`.\n\nWhile work remains, you MUST continue with another tool call \u2014 investigate, edit, run, verify. Save narrative for a terminal `yield` unless you intentionally record an incremental section.\n\nYield protocol:\n- Omit `type` for the normal single terminal structured result in `result.data`.\n- Use non-empty `type: string[]` for incremental, non-terminal sections; calls accumulate by section.\n- A data-less terminal `type: \"result\"` only finalizes previously submitted incremental sections; it NEVER substitutes for `result.data`.\n\nThis is your only way to return a final result. For structured results, you NEVER put JSON in plain text or substitute a text summary for `result.data`.\n\nYour terminal `yield` MUST use exactly this shape \u2014 the schema fields go inside `result.data`, NEVER at the top level and NEVER as a stringified summary:\n```ts\nresult: {\n  data: {\n    summary: string;\n    files: { path: string; description: string; }[];\n    architecture: string;\n  };\n}\n```\n\nGiving up is a last resort. If truly blocked, you MUST terminal-yield `result.error` describing what you tried and the exact blocker.\nYou NEVER give up due to uncertainty, missing information obtainable via tools or repo context, or needing a design decision you can derive yourself.\n\nYou MUST keep going until this ticket is closed. This matters.\n\nPROJECT\n\n<workstation>\n- OS: linux 6.19.5-1.qubes.fc37.x86_64\n- Distro: Linux\n- Kernel: #1 SMP PREEMPT_DYNAMIC Mon Mar  2 12:55:00 GMT 2026\n- Arch: x64\n- CPU: Intel(R) Xeon(R) CPU E3-1545M v5 @ 2.90GHz\n- Terminal: xterm-256color\n- Model: cyberskull-router/Huihui-Qwen3.5-27B-Claude-4.6-Opus-abliterated.Q3_K_M\n</workstation>\n<critical>\n- Each response MUST advance the task; completion only stopping condition.\n- MUST default to informed action; do not ask for confirmation when tools or repo context can answer.\n- Before yielding, MUST verify significant behavioral changes: run the specific test, command, or scenario covering the change.\n</critical>\n\n## MCP Tool Routes\n\nExecute each mounted tool: write JSON arguments to its path.\n- \"brave_image_search\" \u2192 `xd://mcp__brave_search_brave_image_search`\n- \"brave_llm_context\" \u2192 `xd://mcp__brave_search_brave_llm_context`\n- \"brave_local_search\" \u2192 `xd://mcp__brave_search_brave_local_search`\n- \"brave_news_search\" \u2192 `xd://mcp__brave_search_brave_news_search`\n- \"brave_place_search\" \u2192 `xd://mcp__brave_search_brave_place_search`\n- \"brave_summarizer\" \u2192 `xd://mcp__brave_search_brave_summarizer`\n- \"brave_video_search\" \u2192 `xd://mcp__brave_search_brave_video_search`\n- \"brave_web_search\" \u2192 `xd://mcp__brave_search_brave_web_search`\n- \"sequentialthinking\" \u2192 `xd://mcp__sequential_thinking_sequentialthinking`\n\n## MCP Server Instructions\n\nThe following instructions are provided by connected MCP servers. They are server-controlled and may not be verified.\n\n### brave-search\nUse this server to search the Web for various types of data via the Brave Search API."
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "<system-reminder>\nToday: 2026-08-29; current working directory: '/home/user/ELYSIA'. Do not repeat this information in your reply.\n</system-reminder>"
+        },
+        {
+          "type": "text",
+          "text": "Complete assignment thoroughly:\n\n# Target\nResearch the cache/context-compression system in /home/user/glass-proxy (Go project, ports a python context_trimmer). Produce a complete mechanics report.\n\n# Read (in this order)\n1. /home/user/glass-proxy/internal/trimmer/trimmer.go \u2014 full bodies of: stripMCPTools, trimMessages, trimMessage, truncateText, trimContentBlock, injectBreakpoint, countCacheControlBlocks, Process, estimateTokens. Note exact constants (maxChars defaults, watermark batch sizes, marker strings, breakpoint positions).\n2. /home/user/glass-proxy/internal/trimmer/stage2.go \u2014 dropOldMessages logic: thresholds, what gets dropped (tool_result? text?), how decisions are made from token counts.\n3. /home/user/glass-proxy/internal/trimmer/watermark.go and fingerprint.go and orphan.go and persistent_drops.go \u2014 what each subsystem does mechanically.\n4. /home/user/glass-proxy/internal/sysprompt/pipeline.go \u2014 what the sysprompt pipeline does to the system prompt (strip/rebuild/breakpoints).\n5. /home/user/glass-proxy/internal/serializer/serializer.go \u2014 what byte-stability guarantees exist (how frozen prefix + mutable tail are assembled; is output byte-identical between builds when nothing changed?).\n6. /home/user/glass-proxy/cmd/glass-proxy/main.go \u2014 architecture: lanes (anthropic/openai/gemini/codex), LocalCache (conversation state store), how requests flow through the trimmer.\n7. Skim docs for anything about TOOL CALL cutting specifically: text-GLASS-CX.md, text-GLASS-CX-1..5.md, text-GLASS-14.md, text-GLASS-15.md, text-GLASS-BACK2RESEARCH.md (grep for \"tool\" in those files first, read only relevant sections).\n\n# Report format (be complete but compressed)\n- For each subsystem: 3-6 bullet points of exact mechanics with the key constants/lines.\n- Which parts are Anthropic-specific (cache_control, TTL) vs provider-agnostic (trimming, dropping, watermarking).\n- Any existing OpenAI/GLM/vLLM lane handling (openai_handler.go, openai_lane_service.go): does the trimmer run for OpenAI-shaped requests? Do cache_control breakpoints get translated to anything for OpenAI APIs?\n- Verbatim marker strings and default thresholds.\n\n# Acceptance\nA single structured report covering all 7 points. Cite file:line for every claim. Do NOT propose changes, do NOT edit any files."
+        }
+      ]
+    }
+  ],
+  "stream": true,
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "read",
+        "description": "Read files, directories, archives, SQLite, images, documents, internal resources, and web URLs via `path`.\n\n<instruction>\n- SHOULD parallelize independent reads.\n- SHOULD use `read` (not browser) for web content; browser only when `read` can't deliver.\n</instruction>\n\n## Selectors \u2014 append `:<sel>` to `path` (e.g. `src/foo.ts:50-200`, `src/foo.ts:raw`, `db.sqlite:users:42`)\n- `:50` / `:50-` \u2014 from line 50 | `:50-200` \u2014 inclusive | `:50+150` \u2014 150 lines from 50 | `:5-16,960-973` \u2014 multiple ranges\n- `:raw` \u2014 verbatim, no anchors/prefixes | `:2-4:raw` / `:raw:2-4` \u2014 range + verbatim\n- `:conflicts` \u2014 one line per unresolved git merge conflict block\n- `:img` \u2014 rasterize a local `.svg`/`.svgz` as a PNG image; use when visual layout matters\n\n## Source kinds\n- Parseable code, no selector \u2192 structural summary (declarations only, body elided). Footer names recovery selector \u2014 re-issue ONLY those ranges.\n-\n- Directory \u2192 depth-limited dirent listing.\n- SQLite (`.sqlite`, `.sqlite3`, `.db`, `.db3`): `file.db` (tables), `file.db:table` (schema+rows), `file.db:table:key` (by PK), `?limit=`/`?where=`/`?q=SELECT`.\n- Archives (`.zip` family incl. `.jar`/`.apk`/`.whl`, `.tar` incl. `.tar.{gz,bz2,xz,zst}`, `.rar`, `.7z`, `.iso`, `.cab`, `.deb`/`.rpm`/`.cpio`/`.ar`/`.a`, `.lzh`/`.arj`, `.asar`; single-stream `.gz`/`.bz2`/`.xz`/`.zst`): `archive.ext:path/inside/archive` reads a member.\n- Documents \u2192 extracted text. Notebooks \u2192 editable cells. Images \u2192 decoded inline. SVGs read as text unless `:img` is specified. `:raw` bypasses converters.\n- URLs \u2192 reader-mode clean text/markdown; `:raw` \u2192 untouched HTML. Bare `host:port` needs trailing slash.\n- Internal URIs \u2014 all schemes take selectors. `artifact://<id>` recovers spilled output; page with `:N-M`/`:raw:N-M`.\n- `ssh://host/<path>` reads remote file/dir (UTF-8, \u22641 MiB); bare `ssh://` lists hosts; writable with `write` and searchable with `grep`.\n  Literal `:`, `?`, `#` \u2192 percent-encode (`%3A`/`%3F`/`%23`). Requires a verified POSIX shell on the remote host. For Windows or other unsupported hosts, use `bash` with a remote SSH command or mount with `sshfs`.\n\n<critical>\nSummary footer names elided ranges? Re-issue ONLY those ranges. NEVER guess `..`/`\u2026` content.\n</critical>",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "string",
+              "description": "concise intent"
+            },
+            "path": {
+              "type": "string",
+              "description": "Local path, internal URI (e.g. memory://, skill://), or URL. Inline selectors are supported."
+            }
+          },
+          "required": [
+            "path",
+            "i"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "grep",
+        "description": "Searches files/internal URLs: Rust regex, PCRE2 fallback.\n\n<instruction>\n- `path`: known files, directories, globs, internal URLs; roots `;`-separated.\n- Broad searches may time out \u2192 narrow scope or use `glob` first.\n- One-file line selector: `src/foo.ts:50-100`; never selects search root.\n- Literal `\\n` or `\\\\n` enables cross-line patterns.\n</instruction>\n\n<critical>\n- MUST use instead of shell `grep`/`rg`.\n- Open-ended multi-round search MUST use Task, not chained calls.\n</critical>",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "string",
+              "description": "concise intent"
+            },
+            "pattern": {
+              "type": "string",
+              "description": "regex pattern"
+            },
+            "path": {
+              "type": "string",
+              "description": "file, directory, glob, internal URL, or \"<file>:<lines>\" selector to search; pass several as a semicolon-delimited list (\"src; tests\"). Omitted -> searches the workspace root (\".\")"
+            },
+            "case": {
+              "type": "boolean",
+              "description": "case-sensitive search"
+            },
+            "gitignore": {
+              "type": "boolean",
+              "description": "respect gitignore"
+            },
+            "skip": {
+              "description": "files to skip before collecting results \u2014 use to paginate when the prior call hit the file limit",
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "pattern",
+            "i"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "glob",
+        "description": "Globs files, directories, and path-backed internal URLs with fast pattern matching.\n\n<instruction>\n- `path`: glob, file, directory, or path-backed internal URL; separate targets with `;` (`src/**/*.ts; test/**/*.ts`).\n- `memory://` glob patterns are supported. `ssh://` has no local path; use `read`. Other internal URLs accept exact paths only.\n- `gitignore` defaults `true`. Set `false` for ignored files such as `.env*`, logs, or build output.\n- `hidden` defaults `true`; pair it with `gitignore: false` for ignored dotfiles.\n</instruction>\n\n<output>\nMatches are newest-first and grouped by directory; directories end in `/`.\n</output>\n\n<avoid>\nOpen-ended multi-round discovery \u2192 Task.\n</avoid>\n\n<examples>\n# Glob files\n<example i=\"\u2026\">\nsrc/**/*.ts\n</example>\n# Multiple targets \u2014 semicolon-delimited list\n<example i=\"\u2026\">\nsrc/**/*.ts; test/**/*.ts\n</example>\n# Glob gitignored files like .env\n<example>\nglob(i=\"\u2026\", path=\".env*\", gitignore=False)\n</example>\n# Glob directories matching a name (returns both files and dirs; directories are suffixed with `/`)\n<example i=\"\u2026\">\n**/tests\n</example>\n</examples>",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "string",
+              "description": "concise intent"
+            },
+            "path": {
+              "type": "string",
+              "description": "glob, file, or directory to search \u2014 a single path or a semicolon-delimited list (\"src/**/*.ts; test/**/*.ts\"). Omitted -> searches the workspace root (\".\")"
+            },
+            "hidden": {
+              "type": "boolean",
+              "description": "include hidden files"
+            },
+            "gitignore": {
+              "type": "boolean",
+              "description": "respect gitignore"
+            },
+            "limit": {
+              "type": "number",
+              "description": "max results"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "i"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "web_search",
+        "description": "Web search: current information beyond knowledge cutoff.\n\n<instruction>\n- SHOULD prefer primary sources (papers, official docs); corroborate key claims with multiple sources.\n- MUST link cited sources in final response.\n- NEVER use for programmatically accessible content or known URLs (GitHub repos/issues, known arXiv papers, Wikipedia pages, official docs) \u2014 `read` URL directly.\n- `query`: every provider supports Google-style `site:`/`-site:`, `after:`/`before:` (`YYYY-MM-DD`), `inurl:`, `intitle:`, `filetype:`, `\"exact phrase\"`, `-term`, `OR`. Map constraints to native filters when available; otherwise filter results leniently. If a constraint matches nothing, relax and report it; do not return zero results.\n</instruction>",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "string",
+              "description": "concise intent"
+            },
+            "query": {
+              "type": "string"
+            },
+            "recency": {
+              "enum": [
+                "day",
+                "week",
+                "month",
+                "year"
+              ],
+              "type": "string"
+            },
+            "limit": {
+              "type": "number"
+            },
+            "max_tokens": {
+              "type": "number"
+            },
+            "temperature": {
+              "type": "number"
+            },
+            "num_search_results": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "query",
+            "i"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "yield",
+        "description": "Submit subagent output. Always wrap the payload: `result: { data: <your output> }` for success, `result: { error: \"message\" }` for failure. `data`/`error` at the top level or a bare payload is invalid.\n\nOmit `type` for the usual single terminal structured result. Pass `type: [\"section\"]` to submit an incremental, non-terminal section that accumulates.\nThis task declares an output schema: the terminal `result.data` MUST be the full object matching it. A data-less `type: \"result\"` finalizes previously submitted incremental sections; it is invalid when no sections were submitted \u2014 prose in your last turn can never satisfy the schema.",
+        "parameters": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "submit data or error",
+          "properties": {
+            "type": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ],
+              "description": "Optional result type. A non-empty string array is incremental; a string is terminal."
+            },
+            "result": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "task succeeded",
+                  "properties": {
+                    "data": {
+                      "description": "Structured output matching the schema:\n{\n  \"type\": \"object\",\n  \"properties\": {\n    \"summary\": {\n      \"type\": \"string\"\n    },\n    \"files\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"path\": {\n            \"type\": \"string\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          }\n        },\n        \"additionalProperties\": false,\n        \"required\": [\n          \"path\",\n          \"description\"\n        ]\n      }\n    },\n    \"architecture\": {\n      \"type\": \"string\"\n    }\n  },\n  \"additionalProperties\": false,\n  \"required\": [\n    \"summary\",\n    \"files\",\n    \"architecture\"\n  ]\n}",
+                      "anyOf": [
+                        {
+                          "properties": {
+                            "summary": {
+                              "type": "string"
+                            },
+                            "files": {
+                              "items": {
+                                "properties": {
+                                  "path": {
+                                    "type": "string"
+                                  },
+                                  "description": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "path",
+                                  "description"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "architecture": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "summary",
+                            "files",
+                            "architecture"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "items": {
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "description": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "description"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        {
+                          "properties": {
+                            "path": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "path",
+                            "description"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "error message"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "typed task succeeded; data omitted so the last assistant turn is used",
+                  "properties": {},
+                  "required": []
+                }
+              ]
+            }
+          },
+          "required": [
+            "result"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "hub",
+        "description": "Agent coordination: peer messaging, background-job control, and supervised long-running processes. Main agent is `Main`; subagents inherit task ID.\nUse `op: \"list\"` to discover live peers. Default is running+idle plus running/idle/parked/shown/truncated counts \u2014 never an unbounded parked name dump. Pass `status: \"parked\"` for parked archaeology; optional `limit` bounds rows (default 32, max 100). Address peers by exact roster ID \u2014 NEVER invent names. `send` to a known parked id still revives it; `history://<id>` and `agent://<id>` stay readable.\n\n# Messaging & Jobs\n\nBackground jobs auto-deliver when they finish. You NEVER need to poll; if `jobs`/`wait` observes a settled job first, that snapshot is the delivery and suppresses duplicate `async-result`.\n\n- **`send`** (with `to`): fire-and-forget, NEVER blocks. Delivery receipts (`delivered`/`failed`) immediate; `failed` \u2192 peer gone, don't retry.\n  Sending wakes `idle`/`parked` peers. Answering: lead with answer, NEVER quote, set `replyTo`.\n- **Format**: plain prose ONLY. No JSON status objects. Share paths via `local://`/`artifact://` URLs, not pasted blobs.\n- **`wait`**: use ONLY when completely blocked with no other work. Returns on the FIRST of: an incoming message, a watched job finishing, the wait window elapsing, or a steering interrupt \u2014 NOT when all jobs finish; re-issue to keep waiting.\n  - Bare `wait` watches every running job AND incoming messages. NEVER pass an array of every running ID; `ids` narrows to specific jobs, `from` to one peer (or use `await: true` on send).\n- **`inbox`**: drain queued messages without blocking.\n- **`cancel`**: kill background jobs by `ids` when they have hung, stalled, or are no longer needed. Returns immediately.\n- **`jobs`**: status snapshot of every job without waiting. A settled row consumes auto-delivery. Also names running subagents with no job entry \u2014 coordinate with those via `send`.\n- Job rows are process-local and expire roughly five minutes after settlement. Afterward, use the agent ID with `send`, `agent://<id>`, or `history://<id>`.\n- `completed` means successful yield/job exit, not artifact acceptance. Verify claimed changes.\n- NEVER use shell tools, grep, or read other sessions' files to figure out what a peer is doing. Message them directly.\n- NEVER use hub messaging for something a tool can answer (e.g., grepping codebase, running a build).\n\n# Processes\n\nProject-scoped long-running processes shared by every omp instance in the same directory. A long-running service, watcher, debugger, REPL, or process needing later input MUST use `op:\"start\"`, not `bash`.\n\n- **`start`** launches `application` + `args` directly. `cwd` defaults to the session directory; `pty` defaults true.\n  - `ready.log` is a JavaScript `RegExp` compiled with the `u` flag; PCRE inline modifiers such as `(?i)` are REJECTED \u2014 use `[Rr]eady` instead. `ready.port` is a TCP port. Both supplied? BOTH MUST pass. `ready.timeout` is seconds. Readiness MUST be observed; process creation alone is not readiness.\n  - Names are unique per project directory. A completed name MAY be started again; a live name MUST be stopped or restarted.\n  - `restart` policy defaults `no`; `on-failure` and `always` use bounded backoff.\n  - `persist: true` opts out of last-omp teardown; `detached: true` survives broker shutdown and all omp exits (implies persist, disables PTY input). Omit both unless their survival guarantees are required.\n- **`ps`**, **`logs`**, **`wait`** (with `name`), **`send`** (with `name`), **`stop`**, **`restart`**, and **`describe`** address the stable `name`.\n- **`logs`** defaults to the last 100 lines. `head: true` reads the beginning. `grep` is a JavaScript `RegExp` compiled with the `u` flag (no inline modifiers such as `(?i)`). `follow: true` waits for output after `cursor`; reuse the returned cursor on the next call.\n- **`wait`** with `name` blocks until readiness/exit/`pattern` or `timeout` (seconds). `pattern` is a JavaScript `RegExp` compiled with the `u` flag (no inline modifiers such as `(?i)`).\n- **`send`** with `name`: `text` writes stdin (`enter` defaults true); `keys` supports ENTER, TAB, ESCAPE, CTRL_C, CTRL_D, UP, DOWN, LEFT, RIGHT; `signal` supports SIGINT, SIGTERM, SIGHUP, SIGQUIT, SIGKILL. PTY input is serialized; writes share one input stream.\n- **`stop`** performs graceful process-tree termination before hard-kill; NEVER kill an unverified PID through bash. **`restart`** reuses the retained launch spec.\n\n<examples>\n# List peers\n<example i=\"\u2026\">\nlist\n</example>\n# Inspect parked peer history\n<example>\nhub(i=\"\u2026\", op=\"list\", status=\"parked\")\n</example>\n# Fire-and-forget DM \u2014 same send wakes idle/parked peers\n<example>\nhub(i=\"\u2026\", op=\"send\", to=\"AuthLoader\", message=\"Still touching src/server/auth.ts? I need to add a 401 path.\")\n</example>\n# Round-trip when you cannot proceed without the answer\n<example>\nhub(i=\"\u2026\", op=\"send\", to=\"Main\", message=\"JWT or session cookies for the auth flow?\", await=True)\n</example>\n# Completely blocked: wait for the first finished job or incoming message\n<example i=\"\u2026\">\nwait\n</example>\n# Block until a specific peer answers\n<example>\nhub(i=\"\u2026\", op=\"wait\", from=\"AuthLoader\", timeoutMs=60000)\n</example>\n# Kill a hung background job\n<example>\nhub(i=\"\u2026\", op=\"cancel\", ids=[\"bash_a1b2c3\"])\n</example>\n# Snapshot every background job without waiting\n<example i=\"\u2026\">\njobs\n</example>\n# Start a dev server and wait for its log banner and port\n<example>\nhub(i=\"\u2026\", op=\"start\", name=\"web\", application=\"bun\", args=[\"run\", \"dev\"], ready={\"log\": \"Local:.*http\", \"port\": 5173, \"timeout\": 30})\n</example>\n# Follow process output after a cursor\n<example>\nhub(i=\"\u2026\", op=\"logs\", name=\"web\", follow=True, cursor=1842, timeout=30)\n</example>\n# Drive a REPL/debugger over stdin\n<example>\nhub(i=\"\u2026\", op=\"send\", name=\"debugger\", text=\"breakpoint set --name main\")\n</example>\n# Interrupt a process\n<example>\nhub(i=\"\u2026\", op=\"send\", name=\"debugger\", keys=[\"CTRL_C\"])\n</example>\n# Block until a process is ready\n<example>\nhub(i=\"\u2026\", op=\"wait\", name=\"web\", for=\"ready\", timeout=30)\n</example>\n</examples>",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "string",
+              "description": "concise intent"
+            },
+            "op": {
+              "enum": [
+                "send",
+                "wait",
+                "inbox",
+                "list",
+                "jobs",
+                "cancel",
+                "start",
+                "ps",
+                "logs",
+                "stop",
+                "restart",
+                "describe"
+              ],
+              "type": "string",
+              "description": "hub operation"
+            },
+            "to": {
+              "type": "string",
+              "description": "send: recipient agent id or \"all\""
+            },
+            "message": {
+              "type": "string",
+              "description": "send: message body"
+            },
+            "replyTo": {
+              "type": "string",
+              "description": "send: message id being answered"
+            },
+            "await": {
+              "type": "boolean",
+              "description": "send: wait for the recipient's reply (invalid with to:\"all\")"
+            },
+            "from": {
+              "type": "string",
+              "description": "wait: only accept a message from this agent id"
+            },
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "wait: job ids to watch (omit = all running jobs); cancel: job ids to kill"
+            },
+            "timeoutMs": {
+              "type": "number",
+              "description": "wait (messages/jobs): timeout in milliseconds (0 waits indefinitely)"
+            },
+            "peek": {
+              "type": "boolean",
+              "description": "inbox: list messages without consuming them"
+            },
+            "status": {
+              "enum": [
+                "running",
+                "idle",
+                "parked"
+              ],
+              "type": "string",
+              "description": "list: filter by status; omit for running+idle"
+            },
+            "limit": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "list: max peer rows; default 32, max 100"
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 48,
+              "description": "process ops: stable project-scoped launch name"
+            },
+            "application": {
+              "type": "string",
+              "minLength": 1,
+              "description": "start: executable or application path"
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "start: argv passed directly to the application"
+            },
+            "env": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "start: extra environment variables"
+            },
+            "cwd": {
+              "type": "string",
+              "description": "start: working directory; defaults to the session directory"
+            },
+            "pty": {
+              "type": "boolean",
+              "description": "start: allocate an interactive PTY; default true"
+            },
+            "ready": {
+              "type": "object",
+              "properties": {
+                "log": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "regex matched against output"
+                },
+                "port": {
+                  "type": "number",
+                  "description": "TCP port that must accept connections"
+                },
+                "host": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "TCP readiness host; default 127.0.0.1"
+                },
+                "timeout": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "seconds to wait; default 30"
+                }
+              },
+              "description": "start: readiness conditions; all supplied conditions must pass",
+              "additionalProperties": false
+            },
+            "restart": {
+              "enum": [
+                "no",
+                "on-failure",
+                "always"
+              ],
+              "type": "string",
+              "description": "start: restart policy; default no"
+            },
+            "persist": {
+              "type": "boolean",
+              "description": "start: survive the last omp client exiting; default false"
+            },
+            "detached": {
+              "type": "boolean",
+              "description": "start: survive every omp and broker exit; implies persist and disables PTY input"
+            },
+            "lines": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "logs: output lines; default 100, max 1000"
+            },
+            "head": {
+              "type": "boolean",
+              "description": "logs: read from the beginning instead of the tail"
+            },
+            "grep": {
+              "type": "string",
+              "minLength": 1,
+              "description": "logs: regex filter"
+            },
+            "follow": {
+              "type": "boolean",
+              "description": "logs: wait for output newer than cursor"
+            },
+            "cursor": {
+              "type": "number",
+              "minimum": 0,
+              "description": "logs: output cursor returned by an earlier call"
+            },
+            "for": {
+              "enum": [
+                "ready",
+                "exit"
+              ],
+              "type": "string",
+              "description": "wait with name: lifecycle condition; default exit"
+            },
+            "pattern": {
+              "type": "string",
+              "minLength": 1,
+              "description": "wait with name: output regex; takes precedence over for"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "description": "send with name: stdin text"
+            },
+            "enter": {
+              "type": "boolean",
+              "description": "send with name: append Enter after text; default true"
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "send with name: terminal keys after text"
+            },
+            "signal": {
+              "enum": [
+                "SIGINT",
+                "SIGTERM",
+                "SIGHUP",
+                "SIGQUIT",
+                "SIGKILL"
+              ],
+              "type": "string",
+              "description": "send with name: process-tree signal"
+            },
+            "timeout": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "logs/stop/wait with name: max seconds; default 30 (stop: 5)"
+            }
+          },
+          "required": [
+            "op",
+            "i"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "write",
+        "description": "Executes a mounted `xd://` tool device: `path` is `xd://<tool>` and `content` is the device's JSON arguments object. `read xd://` lists the mounted devices; `read xd://<tool>` shows a device's full docs.\n\nOutside active plan mode, this `write` tool rejects every non-`xd://` path. During plan mode, it can also write `local://` sandbox drafts required by that workflow; working-tree paths remain rejected.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "i": {
+              "type": "string",
+              "description": "concise intent"
+            },
+            "path": {
+              "type": "string",
+              "description": "file path"
+            },
+            "content": {
+              "type": "string",
+              "description": "file content"
+            }
+          },
+          "required": [
+            "path",
+            "content",
+            "i"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "max_tokens": 16384,
+  "preserve_thinking": true,
+  "chat_template_kwargs": {
+    "preserve_thinking": true
+  },
+  "enable_thinking": true
+}
