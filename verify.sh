@@ -15,6 +15,12 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GLASS_DIR="${SCRIPT_DIR}"
 BINARY="${GLASS_DIR}/glass-proxy"
+if [ ! -f "${BINARY}" ] && [ -f "${GLASS_DIR}/bin/glass-proxy" ]; then
+    BINARY="${GLASS_DIR}/bin/glass-proxy"
+fi
+if [ ! -f "${BINARY}" ] && command -v go >/dev/null 2>&1; then
+    go build -o "${BINARY}" ./cmd/glass-proxy 2>/dev/null || true
+fi
 
 PASS=0
 FAIL=0
