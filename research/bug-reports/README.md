@@ -1,15 +1,10 @@
 # Full original bug and incident reports
 
-This directory contains retained bug/incident report files used by the public research publication.
+This directory contains byte-for-byte copies of the 39 source files retained from the established `BI-01` through `BI-34` inventory. Report bodies were not summarized, rewritten, sanitized, or weakened. The directory split records provenance only.
 
-## Publication status boundary
+## Glass reports
 
-- Some historically referenced artifacts are not present in this repository snapshot.
-- Missing references are tracked in:
-  - `/home/runner/work/glass-proxy/glass-proxy/docs/missing-withheld-artifacts.md`
-
-## Glass reports (present in-tree)
-
+- [`BUG_REPORT.md`](glass/BUG_REPORT.md)
 - [`1M_CONTEXT_BUG_REPORT.md`](glass/1M_CONTEXT_BUG_REPORT.md)
 - [`ANTHROPIC_MODEL_DEGRADATION_REPORT.md`](glass/ANTHROPIC_MODEL_DEGRADATION_REPORT.md)
 - [`docs/2026-03-07-glass-incident-synthesis.md`](glass/docs/2026-03-07-glass-incident-synthesis.md)
@@ -34,7 +29,7 @@ This directory contains retained bug/incident report files used by the public re
 - [`analysis/2026-03-27-small-system-repeat-cache-experiment.md`](glass/analysis/2026-03-27-small-system-repeat-cache-experiment.md)
 - [`analysis/2026-03-27-recovered-prime-golden-methodology.md`](glass/analysis/2026-03-27-recovered-prime-golden-methodology.md)
 
-## Nataraja predecessor reports (present in-tree)
+## Nataraja predecessor reports
 
 - [`tools/claude-route-inspector/docs/incident-2026-02-15-triple-session-death.md`](nataraja/tools/claude-route-inspector/docs/incident-2026-02-15-triple-session-death.md)
 - [`tools/claude-route-inspector/docs/context-limit-root-cause-2026-02-15.md`](nataraja/tools/claude-route-inspector/docs/context-limit-root-cause-2026-02-15.md)
@@ -42,6 +37,7 @@ This directory contains retained bug/incident report files used by the public re
 - [`tools/claude-route-inspector/docs/api-cost-spike-2026-02-14.md`](nataraja/tools/claude-route-inspector/docs/api-cost-spike-2026-02-14.md)
 - [`docs/2026-3-9/cc_interrupt_bug_report.md`](nataraja/docs/2026-3-9/cc_interrupt_bug_report.md)
 - [`tools/claude-route-inspector/docs/insights2/004-bridge-staleness-session-death.md`](nataraja/tools/claude-route-inspector/docs/insights2/004-bridge-staleness-session-death.md)
+- [`tools/claude-route-inspector/docs/full-system-report-2026-02-15.md`](nataraja/tools/claude-route-inspector/docs/full-system-report-2026-02-15.md)
 - [`tools/claude-route-inspector/docs/cache-optimization-report.md`](nataraja/tools/claude-route-inspector/docs/cache-optimization-report.md)
 - [`tools/claude-route-inspector/docs/quota-investigation-summary.md`](nataraja/tools/claude-route-inspector/docs/quota-investigation-summary.md)
 - [`tools/claude-route-inspector/docs/deep-evidence-unearth-report.md`](nataraja/tools/claude-route-inspector/docs/deep-evidence-unearth-report.md)
@@ -53,4 +49,4 @@ This directory contains retained bug/incident report files used by the public re
 
 ## Integrity
 
-The publication verification compares each retained report’s git blob identity and SHA-256 digest with its tracked source copy.
+The publication verification compares each report’s remote Git blob identity and SHA-256 digest with its original source file.
