@@ -1,137 +1,109 @@
-<img width="1536" height="1024" alt="ChatGPT Image Sep 11, 2026, 09_46_24 PM" src="https://github.com/user-attachments/assets/9c9a527a-779e-4ea5-a37a-4b6ba40b2b04" />
-
-<img width="1536" height="1024" alt="ChatGPT Image Sep 11, 2026, 09_48_43 PM" src="https://github.com/user-attachments/assets/e43e8848-1f16-45c6-b821-31f68398b0be" />
-
-
 # Glass Proxy
 
-Glass is a longitudinal prompt-cache, context-management, recovery, client-reverse-engineering, and provider-protocol research project embodied in a production proxy for AI coding agents.
+Glass Proxy is a **single-user, multi-lane AI proxy** for controlled request routing, context management, and lane-specific protocol handling.
 
-It was built around one practical question:
+This repository is published as a **source-of-truth snapshot of what exists in-tree now**. Historical research narrative is retained, but separated from current implementation authority.
 
-> How can a coding agent preserve the decisions and evidence needed to continue useful work when active context is finite, client history is repeatedly resent or compacted, and changing old content can destroy prompt-cache reuse?
+## What this repository is
 
-The project did not reach its architecture in one pass. It moved through mutable middleware, Stage 1/P4/Stage 2 context surgery, watermarks, session-owned state, whole-message eviction, shadows, facts, chapters, pinned frames, summaries, identity splits, replay-led falsification, Tengu/client analysis, and provider-native lanes. The public record includes the failures, regressions, reversals, and unresolved questions—not only the final source tree.
+- A Go executable at `/home/runner/work/glass-proxy/glass-proxy/cmd/glass-proxy`.
+- A multi-lane proxy with distinct handlers for:
+  - Anthropic Messages (`/v1/messages`)
+  - Codex Responses (`/responses`, `/responses/compact`, websocket `/responses`)
+  - Gemini generateContent / streamGenerateContent
+  - OpenAI-compatible Chat Completions (`/chat/completions`)
+  - OpenRouter (`/openrouter/*`)
+- A hot-reloadable config surface in `/home/runner/work/glass-proxy/glass-proxy/internal/config/config.go`.
+- A debug/control surface mounted under `/debug/*`.
 
-## Origin and contribution
+## What this repository is not
 
-The operator records that the work began in **early 2025** through Claude Thinking Audit, Full Spectrum Analyzer, and predecessor proxy/instrumentation research. The dense surviving engineering corpus is concentrated in January–April 2026; the March 4 Session Glass plan is a major formal redesign, not necessarily the invention date.
+- Not a multi-tenant platform.
+- Not a managed credential broker.
+- Not a guarantee that all historical experiments are active in current runtime.
+- Not a claim that all historical incident artifacts are included publicly.
 
-Glass’s defensible contribution is the integrated engineering program:
+## Security first
 
-- proxy-owned canonical conversation state;
-- explicit system, tools, and message cache-sensitive planes;
-- deliberate mutation boundaries and watermark/anchor experiments;
-- bounded pinned frames with external recovery material;
-- separation of history, chapters, summaries, indexes, facts, and bookmarks;
-- SessionKey, RequestKey, AffinityKey, and PrefixKey ownership;
-- PID/parent-aware subagent identity and fallback analysis;
-- replay and incident-period diff methodology;
-- versioned Tengu/client feature-gate research;
-- capture-first Codex protocol correction;
-- provider-native Claude, Codex, Gemini, and OpenAI-compatible lanes;
-- mechanical evidence/status discipline learned through repeated operational failure.
+Read `/home/runner/work/glass-proxy/glass-proxy/SECURITY.md` before deployment.
 
-Independent prior work exists for external memory, long-context evaluation, compaction, observation masking, and prompt caching. The publication separates independent development and technical similarity from any claim of direct provider influence. See [Origin and contribution](docs/origin-contribution-and-external-context.md).
+Important boundary:
+- The process can expose debug and forwarding endpoints.
+- It processes credentials and conversation payloads.
+- You must bind privately and apply network + filesystem controls.
 
-## The central engineering conflict
+## Quickstart (current repo)
 
-A long agent session accumulates tool output, corrections, failed experiments, decisions, and unfinished work.
+### 1) Build
 
-- Keeping all history eventually exhausts the active context and buries useful signal.
-- Summarizing everything can lose ordering, authority, qualifications, and negative results.
-- Rewriting older content can reduce prompt size while changing bytes covered by a reusable prompt prefix.
-- A stable local hash does not guarantee provider cache reuse.
-- An archive existing on disk does not guarantee that the agent reads or correctly applies it.
+```bash
+cd /home/runner/work/glass-proxy/glass-proxy
+go build -o glass-proxy ./cmd/glass-proxy
+```
 
-Glass treats active context, prompt-cache reuse, durable history, recovery, and session quality as different resources that must be coordinated.
+### 2) Start directly (example)
 
-## Current architecture in brief
+```bash
+./glass-proxy -listen :18888 -mode default
+```
 
-The Anthropic path owns a per-session canonical message cache. It ingests new positions, applies configured normalization, batches selected compression, manages message breakpoints, performs initial eviction and later pinned-frame overflow, writes shadow/chapter recovery material, and builds a bounded provider-facing view. Optional summaries and a recovery gate support navigation without making a summary the only historical record.
+Optional key flags are in `/home/runner/work/glass-proxy/glass-proxy/cmd/glass-proxy/main.go`:
+- `-listen`
+- `-unix-socket`
+- `-upstream`
+- `-claude-upstream`
+- `-config`
+- `-api-key`
+- `-allow-direct`
+- `-mode`
 
-> **Facts are bookmarks; chapters are memory.**
+### 3) Start via helper script
 
-That maxim is a design objective, not a claim of lossless implementation. Current shadow and chapter rendering has documented fidelity limits, and archive writes are not transactionally required before eviction proceeds. See [Memory and recovery](docs/memory-and-recovery.md).
+```bash
+./start.sh --mode default --port 18888
+```
 
-## Provider surfaces
+### 4) Run verification helper
 
-| Surface | Current role |
-|---|---|
-| Anthropic / Claude Messages | Session Glass canonical cache, compression, eviction, pinned frames, chapter/shadow recovery, cache modes |
-| Codex Responses over HTTP | Item-aware local context management and telemetry |
-| Codex Responses over WebSocket | Native frame relay with telemetry and optional capture; separate from HTTP mutation |
-| Codex compact endpoint | Native compact forwarding |
-| Gemini `generateContent` | Contents/parts context management and optional explicit CachedContent |
-| OpenAI-compatible Chat Completions | Request-authoritative context budgeting, cleanup, eviction, and streaming relay |
-| Ollama | Control-plane label over the shared OpenAI-compatible owner |
-| OpenRouter | Dedicated forwarding route, not a state-owning context lane |
+```bash
+./verify.sh
+```
 
-These surfaces do not imply identical cache behavior, persistence, security filtering, or feature parity. See [Provider lanes](docs/provider-lanes.md).
+## Documentation map
 
-## Complete research record
+### Current implementation (authoritative)
 
-Start here:
+- `/home/runner/work/glass-proxy/glass-proxy/docs/current-repository-contract.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/current-architecture.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/provider-lanes.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/cache-and-context-mechanics.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/session-glass-architecture.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/docs-governance.md`
 
-1. [Complete chronology](docs/complete-chronology.md) — every documented era, incident, experiment, correction, regression, and provider transition.
-2. [Filed bug reports](docs/filed-bug-reports.md) — actual report files and their relationships.
-3. [Problem register](docs/problem-register.md) — thirty cross-source mechanisms plus all 118 bug/incident-bearing source records.
-4. [Solution register](docs/solution-register.md) — seventy proposed, verified, failed, reverted, superseded, dormant, and surviving solutions.
-5. [Problem-to-solution lineage](docs/problem-solution-lineage.md) — every problem family connected to its response chain.
-6. [Experiments and results](docs/experiments-and-results.md) — tests, database analyses, replays, captures, and live observations with recorded outcomes.
-7. [Complete source catalogue](docs/source-catalogue.md) — all 190 documentary candidates, including exclusions and evidence limits.
+### Historical archive (non-authoritative for current runtime)
 
-Technical chapters:
+- `/home/runner/work/glass-proxy/glass-proxy/docs/historical-archive-boundary.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/complete-chronology.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/research-chronology.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/problem-register.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/solution-register.md`
+- `/home/runner/work/glass-proxy/glass-proxy/docs/source-catalogue.md`
 
-8. [Cache and context mechanics](docs/cache-and-context-mechanics.md)
-9. [Memory and recovery](docs/memory-and-recovery.md)
-10. [Tengu and coding-client research](docs/tengu-and-client-research.md)
-11. [Session Glass architecture](docs/session-glass-architecture.md)
-12. [Provider lanes](docs/provider-lanes.md)
-13. [Failures and lessons](docs/failures-and-lessons.md)
-14. [Research chronology narrative](docs/research-chronology.md)
-15. [Origin, contribution, and external context](docs/origin-contribution-and-external-context.md)
-16. [Research scope and evidence rules](docs/research-scope-and-evidence.md)
-17. [Research method and provenance](docs/research-method-and-provenance.md)
+### Missing/withheld public artifacts
 
-## What the record establishes
+- `/home/runner/work/glass-proxy/glass-proxy/docs/missing-withheld-artifacts.md`
 
-- The project developed and operated multiple generations of context and cache control.
-- Several report-local fixes were verified in their recorded configurations.
-- Later configurations sometimes regressed those behaviors; both events are retained.
-- Replay directly corrected several local causal explanations.
-- Tengu/client behavior accounted for request changes outside Glass control.
-- Codex wire capture overturned important protocol assumptions.
-- Session ownership, split identity, provider-native lanes, and capture-first analysis survive as central architectural ideas.
-- The research produced useful long-session operation according to operator experience, but the public record does not convert that testimony into a universal benchmark.
+## Repository layout
 
-## What the record does not claim
+- `/home/runner/work/glass-proxy/glass-proxy/cmd/glass-proxy/` — process assembly and endpoint wiring.
+- `/home/runner/work/glass-proxy/glass-proxy/internal/proxy/` — lane routing and request handling.
+- `/home/runner/work/glass-proxy/glass-proxy/internal/glass/` — Anthropic lane state, processing, and recovery structures.
+- `/home/runner/work/glass-proxy/glass-proxy/internal/codex/` — Codex lane.
+- `/home/runner/work/glass-proxy/glass-proxy/internal/gemini/` — Gemini lane.
+- `/home/runner/work/glass-proxy/glass-proxy/internal/config/` — runtime config model.
+- `/home/runner/work/glass-proxy/glass-proxy/internal/debug/` — debug API/data.
+- `/home/runner/work/glass-proxy/glass-proxy/internal/guard/` — guard/scanner integration.
 
-- that every cache miss has one root cause;
-- that provider-internal cache topology or hardware routing is directly visible;
-- that Glass guarantees an eternal or lossless session;
-- that every archive is exact or transactionally committed;
-- that every provider route has identical context, persistence, security, or recovery behavior;
-- that static client gates were active for every account;
-- that security sidecars or behavioral interventions guarantee protection;
-- that Anthropic adopted Glass research without direct causal evidence.
+## License and rights
 
-## Repository map
-
-- `cmd/glass-proxy/` — process assembly, listeners, provider services, and debug/control endpoints.
-- `internal/glass/` — Anthropic session state, compression, eviction, pinned frames, archival recovery, and shared-prefix coordination.
-- `internal/proxy/` — route selection, Anthropic integration, OpenAI-compatible handling, streaming, and OpenRouter forwarding.
-- `internal/claude/`, `internal/codex/`, `internal/gemini/` — provider-owned services and protocol paths.
-- `internal/runtimepaths/` — runtime-root resolution.
-- `internal/guard/` — embedded guard and scanner integration.
-- `bin/`, `start.sh`, `verify.sh` — retained production scripts.
-
-## Deployment and publication boundary
-
-Glass is a single-user proxy that processes credentials and conversation content and exposes diagnostic/control surfaces. Read [SECURITY.md](SECURITY.md) before deployment.
-
-The production source, tests, scripts, and existing assets are preserved. Used configuration, databases, credentials, sessions, logs, captures, and private transcripts are excluded. This documentation publication uses static content/link/sensitive-boundary checks; it does not build, test, execute, restart, or probe Glass.
-
-## Rights
-
-All rights reserved. No software license is granted by this publication.
+See repository policy documents. This publication preserves implementation and research records; it does not grant additional security or compatibility guarantees beyond documented scope.
