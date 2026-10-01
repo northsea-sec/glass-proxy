@@ -120,11 +120,34 @@ Technical chapters:
 
 - `cmd/glass-proxy/` — process assembly, listeners, provider services, and debug/control endpoints.
 - `internal/glass/` — Anthropic session state, compression, eviction, pinned frames, archival recovery, and shared-prefix coordination.
-- `internal/proxy/` — route selection, Anthropic integration, OpenAI-compatible handling, streaming, and OpenRouter forwarding.
+- `internal/proxy/` — route selection, Anthropic integration, OpenAI-compatible handling, streaming, OpenRouter forwarding, and multi-stage request processing (model gate, MCP cache, thinking, context patches, and security sidecars).
 - `internal/claude/`, `internal/codex/`, `internal/gemini/` — provider-owned services and protocol paths.
+- `internal/config/` — hot-reloadable runtime configuration surface (`glass_config.json`).
+- `internal/debug/` — debug and diagnostic endpoints mounted under `/debug/*`.
 - `internal/runtimepaths/` — runtime-root resolution.
-- `internal/guard/` — embedded guard and scanner integration.
-- `bin/`, `start.sh`, `verify.sh` — retained production scripts.
+- `internal/guard/` — embedded security guard and multi-engine scanner integration.
+- `bin/`, `start.sh`, `verify.sh` — retained production scripts and CLI wrappers (`codex-glass`, `gemini-glass`).
+
+## Quickstart
+
+### Build
+```bash
+go build -o glass-proxy ./cmd/glass-proxy
+```
+
+### Start proxy
+```bash
+# Start on default port (18888) in default (Claude) mode
+./start.sh
+
+# Or start in Codex mode on custom port
+./start.sh --mode codex --port 18888
+```
+
+### Verify
+```bash
+./verify.sh
+```
 
 ## Deployment and publication boundary
 

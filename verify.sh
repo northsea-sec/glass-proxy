@@ -12,6 +12,10 @@ else
     RUNTIME_ROOT="${GLASS_RUNTIME_ROOT:-${HOME}/.claude}"
     PROXY_HEALTH_PATH="/v1/messages"
 fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GLASS_DIR="${SCRIPT_DIR}"
+BINARY="${GLASS_DIR}/glass-proxy"
+
 PASS=0
 FAIL=0
 TOTAL=0
@@ -35,12 +39,12 @@ echo ""
 
 # Test A: Binary exists and runs
 echo "--- Test A: Binary ---"
-check "Binary exists" "$(test -f /home/user/glass-proxy/glass-proxy; echo $?)"
-check "Binary executable" "$(test -x /home/user/glass-proxy/glass-proxy; echo $?)"
+check "Binary exists" "$(test -f "${BINARY}"; echo $?)"
+check "Binary executable" "$(test -x "${BINARY}"; echo $?)"
 
 # Test B: Go vet passes
 echo "--- Test B: Go Vet ---"
-cd /home/user/glass-proxy
+cd "${GLASS_DIR}"
 go_vet_result=$(go vet ./... 2>&1; echo $?)
 check "go vet clean" "$(echo "$go_vet_result" | tail -1)"
 
@@ -53,11 +57,11 @@ check "go test all pass" "$test_exit"
 # Test D: Glass module files
 echo "--- Test D: Glass Module ---"
 check "session.go exists" "$(test -f internal/glass/session.go; echo $?)"
-check "eviction.go exists" "$(test -f internal/glass/eviction.go; echo $?)"
+check "localcache.go exists" "$(test -f internal/glass/localcache.go; echo $?)"
 check "shadow.go exists" "$(test -f internal/glass/shadow.go; echo $?)"
 check "reference.go exists" "$(test -f internal/glass/reference.go; echo $?)"
 check "thinking.go exists" "$(test -f internal/glass/thinking.go; echo $?)"
-check "ccfix.go exists" "$(test -f internal/glass/ccfix.go; echo $?)"
+check "chapter.go exists" "$(test -f internal/glass/chapter.go; echo $?)"
 check "sysreminder.go exists" "$(test -f internal/glass/sysreminder.go; echo $?)"
 check "process.go exists" "$(test -f internal/glass/process.go; echo $?)"
 check "sysprompt.go exists" "$(test -f internal/glass/sysprompt.go; echo $?)"

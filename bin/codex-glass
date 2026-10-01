@@ -21,7 +21,8 @@ set -euo pipefail
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
 
-GLASS_DIR="/home/user/glass-proxy"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GLASS_DIR="${GLASS_DIR:-${SCRIPT_DIR}}"
 GLASS_PORT="${GLASS_PORT:-18888}"
 GLASS_AUTO_START="${GLASS_AUTO_START:-0}"
 GLASS_BINARY="${GLASS_DIR}/glass-proxy"

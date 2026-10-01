@@ -4,7 +4,7 @@ This directory contains byte-for-byte copies of the 39 source files retained fro
 
 ## Glass reports
 
-- [`BUG_REPORT.md`](glass/BUG_REPORT.md)
+- `BUG_REPORT.md` (historical source record; see [Filed bug reports](../../docs/filed-bug-reports.md))
 - [`1M_CONTEXT_BUG_REPORT.md`](glass/1M_CONTEXT_BUG_REPORT.md)
 - [`ANTHROPIC_MODEL_DEGRADATION_REPORT.md`](glass/ANTHROPIC_MODEL_DEGRADATION_REPORT.md)
 - [`docs/2026-03-07-glass-incident-synthesis.md`](glass/docs/2026-03-07-glass-incident-synthesis.md)
@@ -37,7 +37,7 @@ This directory contains byte-for-byte copies of the 39 source files retained fro
 - [`tools/claude-route-inspector/docs/api-cost-spike-2026-02-14.md`](nataraja/tools/claude-route-inspector/docs/api-cost-spike-2026-02-14.md)
 - [`docs/2026-3-9/cc_interrupt_bug_report.md`](nataraja/docs/2026-3-9/cc_interrupt_bug_report.md)
 - [`tools/claude-route-inspector/docs/insights2/004-bridge-staleness-session-death.md`](nataraja/tools/claude-route-inspector/docs/insights2/004-bridge-staleness-session-death.md)
-- [`tools/claude-route-inspector/docs/full-system-report-2026-02-15.md`](nataraja/tools/claude-route-inspector/docs/full-system-report-2026-02-15.md)
+- `tools/claude-route-inspector/docs/full-system-report-2026-02-15.md` (historical source record; see [Source catalogue](../../docs/source-catalogue.md))
 - [`tools/claude-route-inspector/docs/cache-optimization-report.md`](nataraja/tools/claude-route-inspector/docs/cache-optimization-report.md)
 - [`tools/claude-route-inspector/docs/quota-investigation-summary.md`](nataraja/tools/claude-route-inspector/docs/quota-investigation-summary.md)
 - [`tools/claude-route-inspector/docs/deep-evidence-unearth-report.md`](nataraja/tools/claude-route-inspector/docs/deep-evidence-unearth-report.md)

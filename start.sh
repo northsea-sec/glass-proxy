@@ -15,7 +15,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GLASS_DIR="/home/user/glass-proxy"
+GLASS_DIR="${SCRIPT_DIR}"
 BINARY="${GLASS_DIR}/glass-proxy"
 MODE="default"
 CONFIG_DIR=""
