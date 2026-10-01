@@ -17,7 +17,7 @@ Glass combines proxy-owned conversation state, client usage gaslighting, same-le
 
 The Glass research program originated in **early 2025** through foundational experiments in LLM inference telemetry, including the *Claude Thinking Audit*, *Full Spectrum Analyzer*, `mitm_itt_addon.py`, and `context_trimmer.py`. 
 
-Initially designed to analyze prompt-cache behavior and inference latency, the codebase evolved into `aletheia` and was subsequently refactored and formalized into the **Session Glass** architecture under the `nataraja` research branch.
+Initially designed to analyze prompt-cache behavior and inference latency, the codebase evolved into `glass-proxy` and was subsequently refactored and formalized into the **Session Glass** architecture under the `glass-proxy` research branch.
 
 Glass is not a conventional HTTP forwarder. It represents a longitudinal, empirical systems-engineering effort built to survive real-world operational failures. Every architectural subsystem in this repository was forged in response to documented session collapses, 7-million-token rate-limit burns, and upstream model regressions.
 
