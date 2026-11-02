@@ -5,7 +5,10 @@
 
 # Glass Proxy
 
-Glass is a high-performance, single-user, multi-lane proxy, telemetry daemon, and active intervention engine engineered to achieve **Eternal Lasting Sessions** for AI coding agents.
+Glass is a weapon for fighting an opaque system. Anthropic's cache was invisible: unknown eviction, unknown TTL, hidden routing across heterogeneous clusters, a 1.25× billing penalty for prefix breaks, and a client (Claude Code) that actively sabotaged you from the inside (auto-compaction, interrupt loops). Glass's entire arsenal — usage spoofing, ITT fingerprinting, batch
+ serialization, same-length surgery — exists to infer and manipulate a system you cannot see or control, through one narrow actuator: request bytes.
+
+Its a high-performance, single-user, multi-lane proxy, telemetry daemon, and active intervention engine engineered to achieve **Eternal Lasting Sessions** for AI coding agents.
 
 Operating transparently between AI developer tools (Claude Code, OpenAI Codex CLI, Google Gemini CLI, Ollama, OpenRouter) and upstream provider APIs, Glass addresses the core mechanical breakdowns of autonomous agent execution: context window exhaustion, vendor-side compaction destruction, prompt-cache invalidation, runaway token burn, and silent provider model degradation.
 
@@ -15,7 +18,7 @@ Glass combines proxy-owned conversation state, client usage gaslighting, same-le
 
 ## Origin, Evolution & Architectural Lineage
 
-The Glass research program originated in **early 2025** through foundational experiments in LLM inference telemetry, including the *Claude Thinking Audit*, *Full Spectrum Analyzer*, `mitm_itt_addon.py`, and `context_trimmer.py`. 
+The Glass research program originated in early 2025 through foundational experiments in LLM inference telemetry, including the *Claude Thinking Audit*, *Full Spectrum Analyzer*, `mitm_itt_addon.py`, and `context_trimmer.py`. 
 
 Initially designed to analyze prompt-cache behavior and inference latency, the codebase evolved into `glass-proxy` and was subsequently refactored and formalized into the **Session Glass** architecture under the `glass-proxy` research branch.
 
