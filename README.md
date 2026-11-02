@@ -1,6 +1,3 @@
-Glass is a weapon for fighting an opaque system. Anthropic's cache was invisible: unknown eviction, unknown TTL, hidden routing across heterogeneous clusters, a 1.25× billing penalty for prefix breaks, and a client (Claude Code) that actively sabotaged you from the inside (auto-compaction, interrupt loops). Glass's entire arsenal — usage spoofing, ITT fingerprinting, batch
- serialization, same-length surgery — exists to infer and manipulate a system you cannot see or control, through one narrow actuator: request bytes.
-
 <img width="1536" height="1024" alt="ChatGPT Image Sep 11, 2026, 09_46_24 PM" src="https://github.com/user-attachments/assets/9c9a527a-779e-4ea5-a37a-4b6ba40b2b04" />
 
 <img width="1536" height="1024" alt="ChatGPT Image Sep 11, 2026, 09_48_43 PM" src="https://github.com/user-attachments/assets/e43e8848-1f16-45c6-b821-31f68398b0be" />
